@@ -191,6 +191,7 @@ class Call:
         except Exception as exc:
             log.exception("call %s: turn failed", self.id)
             self.emit("error", message=repr(exc))
+            self.transferring = False  # whatever failed, keep listening to the caller
             await self.say(UNCLEAR, timing)
 
     async def act(self, tool: str, arguments: dict, reply: str, source: str, heard: str, timing: dict | None):
@@ -250,8 +251,14 @@ class Call:
         path = self.app.cfg.dynamic_sounds / f"{name}.wav"
         sf.write(path, audio, SAMPLE_RATE, subtype="PCM_16")  # Asterisk plays 8 kHz .wav natively
 
-        leg = await self.app.ari.post("/channels", endpoint=self.app.cfg.agent_endpoint, app=self.app.ari.app,
-                                      appArgs=f"agent-leg,{self.id},{name}", callerId="Freya AI <200>", timeout=30)
+        try:
+            leg = await self.app.ari.post("/channels", endpoint=self.app.cfg.agent_endpoint, app=self.app.ari.app,
+                                          appArgs=f"agent-leg,{self.id},{name}", callerId="Freya AI <200>", timeout=30)
+        except RuntimeError as exc:
+            # e.g. "Allocation failed": no agent phone registered. Never leave the caller stuck on hold.
+            path.unlink(missing_ok=True)
+            self.emit("error", message=f"could not ring {self.app.cfg.agent_endpoint}: {exc}")
+            return await self.agent_failed()
         self.agent_leg = leg["id"]
         self.app.agent_legs[self.agent_leg] = self
         self.emit("transfer", step=f"ringing {self.app.cfg.agent_endpoint}", detail=f"briefing: {summary}",

@@ -14,7 +14,7 @@ from tools import NONE_TOOL, ToolRegistry
 
 # Routes a bank wants deterministic: asking for a human always reaches a human.
 GUARDS = [
-    (re.compile(r"\b(temsilci|insan|yetkili|operatör|canlı destek|biriyle görüş)", re.I), "transfer_to_agent"),
+    (re.compile(r"\b(temsi\w*|insan|yetkili|operatör|canlı destek|biriyle görüş)", re.I), "transfer_to_agent"),
 ]
 
 
@@ -22,6 +22,8 @@ GUARDS = [
 # A small model ignores "do not make things up" often enough that this is enforced in code.
 FACT_PATTERN = re.compile(r"\d|%|\b(saat|faiz|ücret|komisyon|oran|lira|tl)\b", re.I)
 MENTIONS_HUMAN = re.compile(r"temsilci|yetkili|bağlan", re.I)
+NO = re.compile(r"\b(hayır|istemiyorum|gerek yok|yok)\b", re.I)
+DECLINED_HUMAN = "Peki, başka nasıl yardımcı olabilirim?"
 YES = re.compile(r"\b(evet|olur|tamam|lütfen|bağla)", re.I)
 SAFE_REPLY = "Bu konuda size en doğru bilgiyi temsilcimiz verebilir, bağlanmak ister misiniz?"
 
@@ -46,6 +48,8 @@ class Router:
             if pattern.search(utterance):
                 return Decision(tool, {"summary": utterance}, source="guard")
         offered_human = history and history[-1]["content"] == SAFE_REPLY
+        if offered_human and NO.search(utterance):
+            return Decision(NONE_TOOL, {}, DECLINED_HUMAN, source="guard")
         if offered_human and YES.search(utterance):
             return Decision("transfer_to_agent", {"summary": history[-2]["content"]}, source="guard")
         decision = await self._llm(utterance, history)

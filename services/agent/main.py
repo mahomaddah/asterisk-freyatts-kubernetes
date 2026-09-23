@@ -15,7 +15,7 @@ from ari import Ari
 from bank_tools import PERSONA, bank, fixed_phrases
 from call import AGENT_BUSY, DTMF_TOOLS, GREETING, HOLD, UNCLEAR, Call
 from console import Console
-from router import ROUTERS, SAFE_REPLY
+from router import DECLINED_HUMAN, ROUTERS, SAFE_REPLY
 from speech import TTSClient, load_stt
 
 log = logging.getLogger("agent")
@@ -70,7 +70,7 @@ class App:
         await self.console.start(self.cfg.console_host, self.cfg.console_port)
         log.info("call inspector on http://%s:%d", self.cfg.console_host, self.cfg.console_port)
         await self.router.decide("merhaba", [])  # load the LLM into memory before the first call
-        await self.tts.warm([GREETING, UNCLEAR, AGENT_BUSY, HOLD, SAFE_REPLY, *fixed_phrases()])
+        await self.tts.warm([GREETING, UNCLEAR, AGENT_BUSY, HOLD, SAFE_REPLY, DECLINED_HUMAN, *fixed_phrases()])
         log.info("pre-rendered %d fixed phrases", len(self.tts.cache))
         async with Ari(self.cfg.ari_url, self.cfg.ari_user, self.cfg.ari_password, self.cfg.app) as ari:
             self.ari = ari
