@@ -1,0 +1,11 @@
+# Phase 1: Asterisk in Docker, FreyaTTS served natively on the host (Apple Metal / CUDA).
+services:
+  asterisk:
+    build: telephony/asterisk
+    env_file: .env
+    ports:
+      - "5060:5060/udp"
+      - "10000-10099:10000-10099/udp"
+    volumes:
+      - ./telephony/asterisk/sounds/tr/freya:/usr/share/asterisk/sounds/tr/freya:ro
+    restart: unless-stopped

@@ -1,0 +1,8 @@
+welcome|Freya Bank'a hoş geldiniz. Bu görüşme hizmet kalitesi için kayıt altına alınabilir.
+menu|Kart ekstreniz için bire, kayıp veya çalıntı kart için ikiye, müşteri temsilcisine bağlanmak için sıfıra basınız.
+card-info|Kartınızın son ödeme tarihi on beş ekim, asgari ödeme tutarı iki bin dört yüz liradır.
+lost-card|Kartınızı güvenliğiniz için geçici olarak kullanıma kapattık. Yeni kartınız üç iş günü içinde adresinize gönderilecektir.
+transfer|Sizi müşteri temsilcimize aktarıyorum, lütfen hattan ayrılmayınız.
+agent-busy|Şu anda tüm temsilcilerimiz başka bir görüşmede. Ana menüye dönüyorum.
+invalid|Geçersiz bir tuşlama yaptınız.
+goodbye|Freya Bank'ı aradığınız için teşekkür ederiz. İyi günler dileriz.

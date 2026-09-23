@@ -1,0 +1,4 @@
+fastapi
+uvicorn[standard]
+prometheus-client
+# FreyaTTS itself: see https://github.com/freyavoiceai/FreyaTTS/blob/main/requirements.txt
