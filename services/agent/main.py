@@ -13,7 +13,7 @@ from prometheus_client import start_http_server
 
 from ari import Ari
 from bank_tools import PERSONA, bank, fixed_phrases
-from call import AGENT_BUSY, DTMF_TOOLS, GREETING, UNCLEAR, Call
+from call import AGENT_BUSY, DTMF_TOOLS, GREETING, HOLD, UNCLEAR, Call
 from console import Console
 from router import ROUTERS, SAFE_REPLY
 from speech import TTSClient, load_stt
@@ -70,7 +70,7 @@ class App:
         await self.console.start(self.cfg.console_host, self.cfg.console_port)
         log.info("call inspector on http://%s:%d", self.cfg.console_host, self.cfg.console_port)
         await self.router.decide("merhaba", [])  # load the LLM into memory before the first call
-        await self.tts.warm([GREETING, UNCLEAR, AGENT_BUSY, SAFE_REPLY, *fixed_phrases()])
+        await self.tts.warm([GREETING, UNCLEAR, AGENT_BUSY, HOLD, SAFE_REPLY, *fixed_phrases()])
         log.info("pre-rendered %d fixed phrases", len(self.tts.cache))
         async with Ari(self.cfg.ari_url, self.cfg.ari_user, self.cfg.ari_password, self.cfg.app) as ari:
             self.ari = ari
@@ -108,7 +108,7 @@ class App:
                 call = self.calls[cid]
                 tool = DTMF_TOOLS.get(ev["digit"])
                 call.emit("dtmf", digit=ev["digit"])
-                if tool and not call.transferred:
+                if tool and not (call.transferred or call.transferring):
                     call.barge_in()
                     await call.act(tool, {"summary": "Müşteri tuşlama ile temsilci istedi."}, "", "dtmf", f"DTMF {ev['digit']}", None)
             elif kind in ("StasisEnd", "ChannelDestroyed"):

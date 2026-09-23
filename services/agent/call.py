@@ -1,6 +1,6 @@
 """One phone call handled by the voice agent.
 
-Media path:  caller <-> Asterisk mixing bridge <-> ExternalMedia (RTP, slin16) <-> this object
+Media path:  caller <-> Asterisk mixing bridge <-> ExternalMedia (RTP, G.711 mu-law) <-> this object
 Turn loop:   VAD end-of-speech -> STT -> router (guard / LLM) -> tool -> TTS -> RTP
 Barge-in:    caller speech while the agent talks stops playback and cancels the pending turn.
 Transfer:    warm - the human agent first hears a spoken summary, then joins the caller's bridge.
@@ -14,11 +14,10 @@ import uuid
 
 import numpy as np
 import soundfile as sf
-import librosa
 
 import metrics
 from rtp import RtpEndpoint
-from speech import SAMPLE_RATE, VAD
+from speech import SAMPLE_RATE, VAD, to_stt_rate
 from tools import NONE_TOOL
 
 log = logging.getLogger("call")
@@ -31,6 +30,16 @@ MAX_UNCLEAR = 2        # unclear turns in a row before handing over to a human
 GREETING = "Freya Bank'a hoş geldiniz, ben Leyla. Size nasıl yardımcı olabilirim?"
 UNCLEAR = "Kusura bakmayın, anlayamadım. Tekrar söyler misiniz?"
 AGENT_BUSY = "Şu anda tüm temsilcilerimiz dolu. Size ben yardımcı olmaya devam edeyim."
+HOLD = "Temsilcimiz birazdan sizinle olacak, lütfen bekleyin."
+SHORT_REPLY = re.compile(r"^\W*(evet|olur|tamam|lütfen|hayır)\W*(lütfen)?\W*$", re.I)
+
+
+def ringback(seconds: float, rate: int) -> np.ndarray:
+    """Turkish ringback tone (450 Hz, 2 s on / 4 s off) so a waiting caller hears progress."""
+    t = np.arange(int(2 * rate)) / rate
+    burst = 0.15 * np.sin(2 * np.pi * 450 * t).astype(np.float32)
+    cycle = np.concatenate([burst, np.zeros(int(4 * rate), dtype=np.float32)])
+    return np.tile(cycle, int(np.ceil(seconds / 6)))
 DTMF_TOOLS = {"0": "transfer_to_agent", "1": "get_statement", "2": "block_card"}
 
 # Whisper hallucinates these on noise / silence in Turkish
@@ -60,6 +69,7 @@ class Call:
         self.turn_task: asyncio.Task | None = None
         self.history: list[dict] = []
         self.unclear = 0
+        self.transferring = False  # ringing a human: no VAD turns, caller hears hold + ringback
         self.transferred = False
         self.closed = False
 
@@ -77,7 +87,7 @@ class Call:
         _, self.rtp = await loop.create_datagram_endpoint(
             lambda: RtpEndpoint(self.on_audio), local_addr=("0.0.0.0", 0))
         port = self.rtp.transport.get_extra_info("sockname")[1]
-        media = await ari.post("/channels/externalMedia", app=ari.app, format="slin16",
+        media = await ari.post("/channels/externalMedia", app=ari.app, format="ulaw",
                                external_host=f"{self.app.cfg.media_host}:{port}")
         self.media_id = media["id"]
         self.app.ignore(self.media_id)
@@ -118,7 +128,7 @@ class Call:
 
     # --- audio in: VAD state machine --------------------------------------------
     def on_audio(self, pcm: np.ndarray):
-        if self.transferred:
+        if self.transferring or self.transferred:
             return
         if self.in_speech:
             self.capture.append(pcm)
@@ -160,7 +170,7 @@ class Call:
         timing = {"t_end": t_end}
         try:
             t0 = time.perf_counter()
-            text = await loop.run_in_executor(app.stt_pool, app.stt.transcribe, audio)
+            text = await loop.run_in_executor(app.stt_pool, app.stt.transcribe, to_stt_rate(audio))
             timing["stt"] = time.perf_counter() - t0
             metrics.STAGE.labels("stt").observe(timing["stt"])
             self.emit("stt", text=mask_pii(text), ms=timing["stt"] * 1000, model=app.stt_label,
@@ -200,7 +210,13 @@ class Call:
         self.history += [{"role": "user", "content": heard}, {"role": "assistant", "content": say}]
         await self.say(say, timing)
         if tool == "transfer_to_agent":
-            await self.warm_transfer(arguments.get("summary") or heard)
+            await self.warm_transfer(self.briefing_summary(arguments.get("summary") or heard))
+
+    def briefing_summary(self, fallback: str) -> str:
+        """What the human agent hears: the caller's real request, not a trailing 'evet'."""
+        asks = [m["content"] for m in self.history if m["role"] == "user"
+                and not m["content"].startswith("DTMF") and not SHORT_REPLY.match(m["content"])]
+        return " ".join(asks[-2:]) or fallback
 
     async def say(self, text: str, timing: dict | None = None):
         t0 = time.perf_counter()
@@ -225,19 +241,24 @@ class Call:
 
     # --- warm transfer --------------------------------------------------------------
     async def warm_transfer(self, summary: str):
+        self.transferring = True
+        self.in_speech = False
         await self.wait_playback()
         briefing = f"Freya asistanından aktarım. Müşteri şunu söyledi: {summary}"
         audio = await self.app.tts.synthesize(briefing)
         name = f"brief-{uuid.uuid4().hex[:12]}"
         path = self.app.cfg.dynamic_sounds / f"{name}.wav"
-        sf.write(path, librosa.resample(audio, orig_sr=SAMPLE_RATE, target_sr=8000), 8000, subtype="PCM_16")
+        sf.write(path, audio, SAMPLE_RATE, subtype="PCM_16")  # Asterisk plays 8 kHz .wav natively
 
         leg = await self.app.ari.post("/channels", endpoint=self.app.cfg.agent_endpoint, app=self.app.ari.app,
                                       appArgs=f"agent-leg,{self.id},{name}", callerId="Freya AI <200>", timeout=30)
         self.agent_leg = leg["id"]
         self.app.agent_legs[self.agent_leg] = self
-        self.emit("transfer", step=f"ringing {self.app.cfg.agent_endpoint}", detail="briefing prepared",
+        self.emit("transfer", step=f"ringing {self.app.cfg.agent_endpoint}", detail=f"briefing: {summary}",
                   audio=self.app.console.save_audio(audio, SAMPLE_RATE))
+        # caller hears a hold message, then ringback until the agent joins (or the call fails)
+        self.rtp.play(await self.app.tts.synthesize(HOLD))
+        self.rtp.play(ringback(40, SAMPLE_RATE))
         log.info("call %s: ringing human agent (%s)", self.id, self.agent_leg)
 
     async def agent_answered(self, leg_id: str, briefing: str):
@@ -251,6 +272,7 @@ class Call:
     async def briefing_done(self, leg_id: str, briefing: str):
         ari = self.app.ari
         self.transferred = True
+        self.transferring = False
         self.rtp.stop_playback()
         await ari.post(f"/bridges/{self.bridge_id}/addChannel", channel=leg_id)
         await ari.delete(f"/channels/{self.media_id}")
@@ -271,4 +293,6 @@ class Call:
         self.agent_leg = None
         metrics.TRANSFERS.labels("no_answer").inc()
         self.emit("transfer", step="agent did not answer")
+        self.rtp.stop_playback()
+        self.transferring = False
         await self.say(AGENT_BUSY)

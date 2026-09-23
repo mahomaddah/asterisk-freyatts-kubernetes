@@ -9,14 +9,20 @@ import aiohttp
 import numpy as np
 import soundfile as sf
 import torch
+from scipy.signal import resample_poly
 from silero_vad import load_silero_vad
 
-SAMPLE_RATE = 16000
-VAD_WINDOW = 512  # samples at 16 kHz (32 ms), what Silero expects
+SAMPLE_RATE = 8000   # telephony audio (G.711) end to end
+STT_RATE = 16000     # Whisper's input rate
+VAD_WINDOW = 256     # samples at 8 kHz (32 ms), what Silero expects
+
+
+def to_stt_rate(audio: np.ndarray) -> np.ndarray:
+    return resample_poly(audio, STT_RATE // SAMPLE_RATE, 1).astype(np.float32)
 
 
 class VAD:
-    """Silero VAD over a stream of 16 kHz float32 audio, one instance per call."""
+    """Silero VAD over a stream of 8 kHz float32 audio, one instance per call."""
 
     def __init__(self, threshold: float = 0.5):
         self.model = load_silero_vad()
@@ -40,7 +46,7 @@ class MlxWhisper:
         import mlx_whisper
         self._mlx = mlx_whisper
         self.repo = model if "/" in model else f"mlx-community/whisper-{model}-mlx"
-        self.transcribe(np.zeros(SAMPLE_RATE, dtype=np.float32))  # load + compile once
+        self.transcribe(np.zeros(STT_RATE, dtype=np.float32))  # load + compile once
 
     def transcribe(self, audio: np.ndarray) -> str:
         return self._mlx.transcribe(audio, path_or_hf_repo=self.repo, language="tr")["text"].strip()

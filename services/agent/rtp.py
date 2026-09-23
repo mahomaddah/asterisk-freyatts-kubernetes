@@ -1,8 +1,11 @@
-"""Minimal RTP endpoint for an Asterisk ExternalMedia channel (slin16, 20 ms frames).
+"""Minimal RTP endpoint for an Asterisk ExternalMedia channel (G.711 mu-law, 20 ms frames).
 
-Asterisk sends the bridge mix to us; we learn its address and payload type from the
-first packet and send the agent's speech back to that same address (symmetric RTP,
+Asterisk sends the bridge mix to us; we learn its address from the first packet and send the agent's speech back to that same address (symmetric RTP,
 which also works through Docker / Kubernetes NAT).
+
+mu-law (static payload type 0) rather than slin16: the phone leg is 8 kHz G.711
+anyway, and Asterisk 20.6's ExternalMedia did not accept inbound slin16 on its
+dynamic payload type (packets arrived but never reached the bridge).
 """
 import asyncio
 import random
@@ -10,8 +13,11 @@ import struct
 
 import numpy as np
 
-FRAME_SAMPLES = 320               # 20 ms at 16 kHz
-FRAME_BYTES = FRAME_SAMPLES * 2   # slin16 = 16-bit big-endian PCM
+from g711 import ulaw_decode, ulaw_encode
+
+FRAME_SAMPLES = 160               # 20 ms at 8 kHz
+FRAME_BYTES = FRAME_SAMPLES       # one byte per mu-law sample
+PAYLOAD_TYPE = 0                  # PCMU
 
 
 class RtpEndpoint(asyncio.DatagramProtocol):
@@ -19,11 +25,10 @@ class RtpEndpoint(asyncio.DatagramProtocol):
         self.on_audio = on_audio      # callback(np.float32 array), called per received frame
         self.transport = None
         self.remote = None
-        self.payload_type = None
         self.seq = random.randint(0, 0xFFFF)
         self.ts = random.randint(0, 0xFFFFFFFF)
         self.ssrc = random.randint(0, 0xFFFFFFFF)
-        self.out = bytearray()        # pending outbound PCM (big-endian bytes)
+        self.out = bytearray()        # pending outbound mu-law bytes
         self.sender = None
         self.frames_in = 0
         self.frames_out = 0
@@ -42,16 +47,14 @@ class RtpEndpoint(asyncio.DatagramProtocol):
         if has_ext:
             offset += 4 + 4 * struct.unpack_from("!H", data, offset + 2)[0]
         self.remote = addr
-        self.payload_type = data[1] & 0x7F
-        pcm = np.frombuffer(data[offset:], dtype=">i2").astype(np.float32) / 32768.0
+        pcm = ulaw_decode(data[offset:])
         self.frames_in += 1
         self.on_audio(pcm)
 
     # --- outbound --------------------------------------------------------------
     def play(self, audio: np.ndarray):
-        pcm = (np.clip(audio, -1, 1) * 32767).astype(">i2").tobytes()
-        pad = (-len(pcm)) % FRAME_BYTES
-        self.out.extend(pcm + b"\0" * pad)
+        pad = (-len(audio)) % FRAME_SAMPLES
+        self.out.extend(ulaw_encode(np.concatenate([audio, np.zeros(pad, dtype=np.float32)])))
 
     def stop_playback(self):
         self.out.clear()
@@ -69,7 +72,7 @@ class RtpEndpoint(asyncio.DatagramProtocol):
             if not self.out or self.remote is None:
                 continue
             frame, self.out[:FRAME_BYTES] = bytes(self.out[:FRAME_BYTES]), b""
-            header = struct.pack("!BBHII", 0x80, self.payload_type, self.seq, self.ts, self.ssrc)
+            header = struct.pack("!BBHII", 0x80, PAYLOAD_TYPE, self.seq, self.ts, self.ssrc)
             self.transport.sendto(header + frame, self.remote)
             self.seq = (self.seq + 1) & 0xFFFF
             self.ts = (self.ts + FRAME_SAMPLES) & 0xFFFFFFFF

@@ -21,6 +21,7 @@ GUARDS = [
 # Free-text replies must not state facts the bank never gave the model (hours, rates, fees...).
 # A small model ignores "do not make things up" often enough that this is enforced in code.
 FACT_PATTERN = re.compile(r"\d|%|\b(saat|faiz|ücret|komisyon|oran|lira|tl)\b", re.I)
+MENTIONS_HUMAN = re.compile(r"temsilci|yetkili|bağlan", re.I)
 YES = re.compile(r"\b(evet|olur|tamam|lütfen|bağla)", re.I)
 SAFE_REPLY = "Bu konuda size en doğru bilgiyi temsilcimiz verebilir, bağlanmak ister misiniz?"
 
@@ -48,7 +49,9 @@ class Router:
         if offered_human and YES.search(utterance):
             return Decision("transfer_to_agent", {"summary": history[-2]["content"]}, source="guard")
         decision = await self._llm(utterance, history)
-        if decision.tool == NONE_TOOL and FACT_PATTERN.search(decision.reply):
+        # facts the model may have invented, or a vague "you can talk to an agent" that leaves the
+        # caller unsure what to do: replace with one fixed question the yes-guard understands
+        if decision.tool == NONE_TOOL and (FACT_PATTERN.search(decision.reply) or MENTIONS_HUMAN.search(decision.reply)):
             return Decision(NONE_TOOL, {}, SAFE_REPLY, source="output_guard")
         return decision
 
