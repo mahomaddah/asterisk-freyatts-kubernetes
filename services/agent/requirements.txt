@@ -1,0 +1,10 @@
+aiohttp
+numpy
+soundfile
+librosa
+torch
+silero-vad
+prometheus-client
+# STT backend: mlx-whisper on Apple Silicon, faster-whisper on CUDA
+mlx-whisper; sys_platform == "darwin"
+faster-whisper; sys_platform != "darwin"

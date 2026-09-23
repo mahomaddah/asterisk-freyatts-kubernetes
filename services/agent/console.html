@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Call Inspector</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --panel: #ffffff; --line: #e3e6eb; --text: #1b1f24; --muted: #6a7280;
+    --accent: #3a5bd9; --vad: #8a8f98; --stt: #0f8a6a; --route: #7a4bd1; --tool: #c46a12;
+    --tts: #3a5bd9; --warn: #c2362f; --xfer: #b3316e; --bar-bg: #eef0f4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1216; --panel: #171b21; --line: #262c35; --text: #e6e9ee; --muted: #8b93a1;
+      --accent: #7d97ff; --vad: #7b818c; --stt: #38c49b; --route: #a987f0; --tool: #e59a4c;
+      --tts: #7d97ff; --warn: #f06b63; --xfer: #e36aa2; --bar-bg: #222831;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  header { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 14px 20px;
+           border-bottom: 1px solid var(--line); background: var(--panel); position: sticky; top: 0; z-index: 2; }
+  h1 { font-size: 16px; margin: 0; font-weight: 650; }
+  .live { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--warn); }
+  .dot.on { background: var(--stt); box-shadow: 0 0 0 3px color-mix(in srgb, var(--stt) 25%, transparent); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-left: auto; }
+  .chip { font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; padding: 3px 8px; border-radius: 999px;
+          border: 1px solid var(--line); color: var(--muted); }
+  main { display: grid; grid-template-columns: 260px 1fr; min-height: calc(100vh - 56px); }
+  aside { border-right: 1px solid var(--line); padding: 12px; overflow-y: auto; }
+  .call { padding: 10px 12px; border-radius: 8px; cursor: pointer; border: 1px solid transparent; margin-bottom: 6px; }
+  .call:hover { background: var(--panel); }
+  .call.sel { background: var(--panel); border-color: var(--line); }
+  .call .who { font-weight: 600; }
+  .call .sub { color: var(--muted); font-size: 12px; }
+  .badge-live { color: var(--stt); font-size: 11px; font-weight: 600; }
+  section { padding: 16px 20px; overflow-x: hidden; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 16px; }
+  .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+  .stat .v { font-size: 20px; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .stat .k { color: var(--muted); font-size: 12px; }
+  .timeline { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+  .ev { display: grid; grid-template-columns: 64px 92px 1fr auto; gap: 10px; align-items: start;
+        padding: 9px 12px; border-top: 1px solid var(--line); }
+  .ev:first-child { border-top: 0; }
+  .t { color: var(--muted); font: 12px ui-monospace, Menlo, monospace; padding-top: 2px; }
+  .stage { font: 600 11px ui-monospace, Menlo, monospace; text-transform: uppercase; letter-spacing: .03em;
+           padding: 2px 6px; border-radius: 4px; justify-self: start; color: var(--c);
+           background: color-mix(in srgb, var(--c) 14%, transparent); }
+  .body { min-width: 0; overflow-wrap: anywhere; }
+  .body .quote { font-size: 15px; }
+  .body .meta { color: var(--muted); font-size: 12px; font-family: ui-monospace, Menlo, monospace; }
+  .ms { font: 12px ui-monospace, Menlo, monospace; color: var(--muted); white-space: nowrap; padding-top: 2px; }
+  audio { height: 28px; margin-top: 4px; max-width: 100%; }
+  .bar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: var(--bar-bg); margin: 6px 0 4px; max-width: 520px; }
+  .bar span { display: block; height: 100%; }
+  .legend { display: flex; gap: 12px; font-size: 12px; color: var(--muted); flex-wrap: wrap; }
+  .legend i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; }
+  .empty { color: var(--muted); padding: 40px; text-align: center; }
+  @media (max-width: 760px) {
+    main { grid-template-columns: 1fr; }
+    aside { border-right: 0; border-bottom: 1px solid var(--line); display: flex; gap: 6px; overflow-x: auto; }
+    .call { min-width: 170px; margin: 0; }
+    .ev { grid-template-columns: 52px 1fr; }
+    .ev .stage { grid-column: 2; }
+    .ev .body { grid-column: 1 / -1; }
+    .ev .ms { grid-column: 1 / -1; }
+    .chips { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Call Inspector</h1>
+  <span class="live"><span class="dot" id="dot"></span><span id="livetxt">connecting</span></span>
+  <div class="chips" id="chips"></div>
+</header>
+<main>
+  <aside id="calls"></aside>
+  <section id="detail"><div class="empty">Call extension 200 to see the pipeline live.</div></section>
+</main>
+<script>
+const STAGES = {
+  call_start: ["call", "--accent"], call_end: ["call", "--muted"], speech_start: ["vad", "--vad"],
+  speech_end: ["vad", "--vad"], barge_in: ["barge-in", "--warn"], stt: ["stt", "--stt"],
+  route: ["router", "--route"], tool: ["tool", "--tool"], tts: ["tts", "--tts"], dtmf: ["dtmf", "--route"],
+  transfer: ["transfer", "--xfer"], error: ["error", "--warn"], turn: ["latency", "--muted"],
+};
+const state = { calls: new Map(), selected: null, pinned: false };
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const ms = (v) => (v == null ? "" : `${Math.round(v)} ms`);
+
+function body(e) {
+  const audio = e.audio ? `<audio controls preload="none" src="${e.audio}"></audio>` : "";
+  switch (e.kind) {
+    case "call_start": return `Call from <b>${esc(e.caller)}</b><div class="meta">bridge ${esc(e.bridge)} · rtp :${e.port}</div>`;
+    case "call_end": return `Call ended`;
+    case "speech_start": return `Caller started speaking`;
+    case "speech_end": return `Caller stopped · ${(e.duration_ms / 1000).toFixed(1)} s of speech`;
+    case "barge_in": return `Caller interrupted the agent, playback stopped`;
+    case "stt": return `<div class="quote">“${esc(e.text)}”</div><div class="meta">${esc(e.model)}</div>${audio}`;
+    case "route": return `<b>${esc(e.tool)}</b> <span class="meta">via ${esc(e.source)} ${e.arguments && Object.keys(e.arguments).length ? esc(JSON.stringify(e.arguments)) : ""}</span>` +
+                         (e.reply ? `<div class="meta">model reply${e.tool !== "none" && e.source !== "output_guard" ? " (not spoken, action text comes from code)" : ""}: ${esc(e.reply)}</div>` : "");
+    case "tool": return `<b>${esc(e.name)}()</b><div class="meta">${esc(JSON.stringify(e.result))}</div>`;
+    case "tts": return `<div class="quote">${esc(e.text)}</div><div class="meta">${e.cached ? "pre-rendered (cache hit)" : "synthesized live"}</div>${audio}`;
+    case "dtmf": return `Key <b>${esc(e.digit)}</b> pressed`;
+    case "transfer": return `${esc(e.step)}${e.detail ? ` <span class="meta">${esc(e.detail)}</span>` : ""}${audio}`;
+    case "error": return `<span style="color:var(--warn)">${esc(e.message)}</span>`;
+    case "turn": {
+      const total = e.e2e_ms || 1, parts = [["endpoint", e.endpoint_ms, "--vad"], ["stt", e.stt_ms, "--stt"],
+        ["router", e.llm_ms, "--route"], ["tts", e.tts_ms, "--tts"]];
+      return `<b>${ms(e.e2e_ms)}</b> from caller silence to agent audio
+        <div class="bar">${parts.map(([, v, c]) => `<span style="width:${(100 * (v || 0)) / total}%;background:var(${c})"></span>`).join("")}</div>
+        <div class="legend">${parts.map(([k, v, c]) => `<span><i style="background:var(${c})"></i>${k} ${ms(v)}</span>`).join("")}</div>`;
+    }
+    default: return esc(JSON.stringify(e));
+  }
+}
+
+function renderList() {
+  const calls = [...state.calls.values()].sort((a, b) => b.started - a.started);
+  $("calls").innerHTML = calls.map((c) => {
+    const start = c.events.find((e) => e.kind === "call_start") || {};
+    const live = !c.events.some((e) => e.kind === "call_end");
+    const turns = c.events.filter((e) => e.kind === "turn").length;
+    return `<div class="call ${c.id === state.selected ? "sel" : ""}" data-id="${esc(c.id)}">
+      <div class="who">${esc(start.caller || "caller")} ${live ? '<span class="badge-live">● live</span>' : ""}</div>
+      <div class="sub">${new Date(c.started * 1000).toLocaleTimeString()} · ${turns} turn${turns === 1 ? "" : "s"}</div></div>`;
+  }).join("") || `<div class="empty" style="padding:12px">No calls yet</div>`;
+  document.querySelectorAll(".call").forEach((el) => el.onclick = () => { state.selected = el.dataset.id; state.pinned = true; render(); });
+}
+
+function renderDetail() {
+  const c = state.calls.get(state.selected);
+  if (!c) return;
+  const turns = c.events.filter((e) => e.kind === "turn").map((e) => e.e2e_ms).sort((a, b) => a - b);
+  const median = turns.length ? turns[Math.floor(turns.length / 2)] : null;
+  const count = (k) => c.events.filter((e) => e.kind === k).length;
+  const tools = c.events.filter((e) => e.kind === "tool").map((e) => e.name);
+  $("detail").innerHTML = `
+    <div class="stats">
+      <div class="stat"><div class="v">${turns.length}</div><div class="k">turns</div></div>
+      <div class="stat"><div class="v">${median ? ms(median) : "–"}</div><div class="k">median response</div></div>
+      <div class="stat"><div class="v">${count("barge_in")}</div><div class="k">barge-ins</div></div>
+      <div class="stat"><div class="v">${tools.length ? esc(tools.join(", ")) : "–"}</div><div class="k">tools executed</div></div>
+    </div>
+    <div class="timeline">${c.events.map((e) => {
+      const [label, color] = STAGES[e.kind] || [e.kind, "--muted"];
+      return `<div class="ev"><div class="t">${(e.t / 1000).toFixed(2)}s</div>
+        <div class="stage" style="--c:var(${color})">${label}</div>
+        <div class="body">${body(e)}</div><div class="ms">${e.kind === "turn" ? "" : ms(e.ms)}</div></div>`;
+    }).join("")}</div>`;
+}
+
+function render() { renderList(); renderDetail(); }
+
+function add(e) {
+  let c = state.calls.get(e.call);
+  if (!c) { c = { id: e.call, started: Date.now() / 1000 - e.t / 1000, events: [] }; state.calls.set(e.call, c); }
+  c.events.push(e);
+  if (e.kind === "call_start" && !state.pinned) state.selected = e.call;
+  if (!state.selected) state.selected = e.call;
+  render();
+}
+
+async function boot() {
+  const s = await (await fetch("/api/state")).json();
+  $("chips").innerHTML = Object.entries(s.meta).map(([k, v]) => `<span class="chip">${esc(k)}: ${esc(v)}</span>`).join("");
+  for (const c of s.calls) state.calls.set(c.id, c);
+  const newest = [...state.calls.values()].sort((a, b) => b.started - a.started)[0];
+  if (newest) state.selected = newest.id;
+  render();
+  const es = new EventSource("/events");
+  es.onopen = () => { $("dot").classList.add("on"); $("livetxt").textContent = "live"; };
+  es.onerror = () => { $("dot").classList.remove("on"); $("livetxt").textContent = "reconnecting"; };
+  es.onmessage = (m) => add(JSON.parse(m.data));
+}
+boot();
+</script>
+</body>
+</html>

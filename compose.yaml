@@ -9,4 +9,6 @@ services:
       - "127.0.0.1:8088:8088"   # ARI, host-only
     volumes:
       - ./telephony/asterisk/sounds/tr/freya:/usr/share/asterisk/sounds/tr/freya:ro
+      # per-call audio written by the voice agent (warm-transfer briefings)
+      - ./telephony/asterisk/sounds/dynamic:/srv/dynamic-sounds:ro
     restart: unless-stopped

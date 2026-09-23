@@ -1,72 +1,63 @@
-"""Tools and system prompt for the banking voice agent (shared by the agent and benchmarks)."""
+"""Banking plugin: the tools the voice agent can execute, backed by a mock core-banking API.
 
-SYSTEM_PROMPT = (
+Every tool returns a dict with a pre-written Turkish sentence in "say", so the words
+spoken after an action come from code, not from the model.
+"""
+from tools import ToolRegistry
+
+bank = ToolRegistry()
+
+
+@bank.tool(
+    "Kayıp veya çalıntı kartı geçici olarak kullanıma kapatır. Örnek: kartımı kaybettim, kartım çalındı, kartı kapatın.",
+    parameters={"reason": {"type": "string", "enum": ["lost", "stolen"]}},
+)
+def block_card(reason: str = "lost") -> dict:
+    return {"status": "blocked", "reason": reason,
+            "say": "Kartınızı güvenliğiniz için kullanıma kapattım. Yeni kartınız üç gün içinde adresinize ulaşacak."}
+
+
+@bank.tool("Kredi kartı ekstresi: borç, asgari ödeme tutarı, son ödeme tarihi. Örnek: ne kadar borcum var, son ödeme tarihim ne zaman.")
+def get_statement() -> dict:
+    return {"due_date": "15 Ekim", "minimum_payment_try": 2400, "total_debt_try": 18750,
+            "say": "Son ödeme tarihiniz on beş ekim. Asgari tutar iki bin dört yüz lira."}
+
+
+@bank.tool(
+    "Görüşmeyi insan müşteri temsilcisine aktarır.",
+    parameters={"summary": {"type": "string", "description": "Temsilci için tek cümlelik özet"}},
+)
+def transfer_to_agent(summary: str = "") -> dict:
+    return {"status": "transferring", "summary": summary,
+            "say": "Sizi müşteri temsilcimize aktarıyorum, lütfen hattan ayrılmayın."}
+
+
+def fixed_phrases() -> list[str]:
+    """Sentences the tools can speak, for pre-rendering at start-up."""
+    return [block_card()["say"], get_statement()["say"], transfer_to_agent()["say"]]
+
+
+PERSONA = (
     "Sen Freya Bank'ın telefon asistanı Leyla'sın. Müşteriyle telefonda Türkçe konuşuyorsun. "
-    "Cevapların tek ve kısa bir cümle olsun, en fazla on beş kelime. "
+    "Cevapların tek ve kısa bir cümle olsun, en fazla on iki kelime. "
     "Rakam kullanma, sayıları yazıyla yaz. Emoji, madde işareti veya markdown kullanma. "
-    "Kart kaybı veya çalınması için block_card, ekstre ve borç soruları için get_statement, "
-    "müşteri insan temsilci isterse ya da sen çözemezsen transfer_to_agent aracını kullan."
+    "Saat, faiz, ücret, şube gibi bilmediğin hiçbir bilgiyi uydurma; bunun için temsilciye bağlanabileceğini söyle."
 )
 
-TOOLS = [
-    {
-        "type": "function",
-        "function": {
-            "name": "block_card",
-            "description": "Kayıp veya çalıntı kartı geçici olarak kullanıma kapatır.",
-            "parameters": {"type": "object", "properties": {
-                "reason": {"type": "string", "enum": ["lost", "stolen"]}}, "required": ["reason"]},
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_statement",
-            "description": "Kredi kartı ekstresi: son ödeme tarihi, asgari tutar, toplam borç.",
-            "parameters": {"type": "object", "properties": {}},
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "transfer_to_agent",
-            "description": "Görüşmeyi insan müşteri temsilcisine aktarır.",
-            "parameters": {"type": "object", "properties": {
-                "summary": {"type": "string", "description": "Temsilci için tek cümlelik özet"}},
-                "required": ["summary"]},
-        },
-    },
-]
-
-
-def run_tool(name: str, args: dict) -> dict:
-    """Mock core-banking backend."""
-    if name == "block_card":
-        return {"status": "blocked", "new_card_days": 3}
-    if name == "get_statement":
-        return {"due_date": "15 Ekim", "minimum_payment_try": 2400, "total_debt_try": 18750}
-    if name == "transfer_to_agent":
-        return {"status": "transferring"}
-    return {"error": f"unknown tool {name}"}
-
-
-# ---------------------------------------------------------------------------
-# Structured-output variant. Small models are unreliable at free-form tool calls
-# (they sometimes *say* the card is blocked without calling the tool). Instead the
-# model must return JSON matching this schema (enforced by constrained decoding),
-# and the agent -- not the model -- executes the action for the chosen intent.
-# ---------------------------------------------------------------------------
-INTENTS = ["block_card", "get_statement", "transfer_to_agent", "smalltalk", "unknown"]
-
+# --- kept for bench/llm_bench.py and bench/llm_intent_bench.py -------------------------
+SYSTEM_PROMPT = PERSONA + (
+    " Kart kaybı veya çalınması için block_card, ekstre ve borç soruları için get_statement, "
+    "müşteri insan temsilci isterse ya da sen çözemezsen transfer_to_agent aracını kullan."
+)
+TOOLS = bank.function_schemas()
 INTENT_SCHEMA = {
     "type": "object",
     "properties": {
-        "intent": {"type": "string", "enum": INTENTS},
+        "intent": {"type": "string", "enum": ["block_card", "get_statement", "transfer_to_agent", "smalltalk", "unknown"]},
         "reply": {"type": "string"},
     },
     "required": ["intent", "reply"],
 }
-
 INTENT_PROMPT = (
     "Sen Freya Bank'ın telefon asistanı Leyla'sın. Müşterinin son cümlesini sınıflandır ve kısa bir cevap yaz.\n"
     "intent değerleri:\n"
