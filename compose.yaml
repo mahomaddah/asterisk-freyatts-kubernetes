@@ -6,6 +6,7 @@ services:
     ports:
       - "5060:5060/udp"
       - "10000-10099:10000-10099/udp"
+      - "127.0.0.1:8088:8088"   # ARI, host-only
     volumes:
       - ./telephony/asterisk/sounds/tr/freya:/usr/share/asterisk/sounds/tr/freya:ro
     restart: unless-stopped

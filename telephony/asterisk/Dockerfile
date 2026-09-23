@@ -11,5 +11,5 @@ COPY config/ /etc/asterisk-templates/
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-EXPOSE 5060/udp 10000-10099/udp
+EXPOSE 5060/udp 10000-10099/udp 8088
 ENTRYPOINT ["/entrypoint.sh"]
