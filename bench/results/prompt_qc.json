@@ -1,0 +1,82 @@
+{
+ "welcome": {
+  "text": "Freya Bank'a hoş geldiniz. Bu görüşme hizmet kalitesi için kayıt altına alınabilir.",
+  "cer": 0.0,
+  "min_pitch": 203,
+  "steps": 32,
+  "max_words": 11,
+  "attempt": 1,
+  "heard": "Freya Bank'a hoş geldiniz. Bu görüşme hizmet kalitesi için kayıt altına alınabilir.",
+  "passed": true
+ },
+ "menu": {
+  "text": "Ekstre bilgisi için bire basın. Kayıp kart için ikiye basın. Temsilciye bağlanmak için sıfıra basın.",
+  "cer": 0.012048192771084338,
+  "min_pitch": 210,
+  "steps": 32,
+  "max_words": 6,
+  "attempt": 5,
+  "heard": "Ekstra bilgisi için 1'e basın.  Kayıp kart için 2'ye basın.  Temsilciye bağlanmak için 0'a basın.",
+  "passed": true
+ },
+ "card-info": {
+  "text": "Son ödeme günü on beş ekim. Ödemeniz gereken en az tutar iki bin dört yüz liradır.",
+  "cer": 0.015384615384615385,
+  "min_pitch": 255,
+  "steps": 32,
+  "max_words": 11,
+  "attempt": 7,
+  "heard": "Son ödeme günü 15 Ekim. Ödemeniz gereken en az tutan 2400 liradır.",
+  "passed": true
+ },
+ "lost-card": {
+  "text": "Kartınız güvenliğiniz için kapatıldı. Yeni kartınızı birkaç gün içinde adresinize göndereceğiz.",
+  "cer": 0.0,
+  "min_pitch": 219,
+  "steps": 32,
+  "max_words": 6,
+  "attempt": 8,
+  "heard": "Kartınız güvenliğiniz için kapatıldı.  Yeni kartınızı birkaç gün için de adresinize göndereceğiz.",
+  "passed": true
+ },
+ "transfer": {
+  "text": "Sizi müşteri temsilcimize aktarıyorum, lütfen hattan ayrılmayınız.",
+  "cer": 0.034482758620689655,
+  "min_pitch": 252,
+  "steps": 32,
+  "max_words": 11,
+  "attempt": 1,
+  "heard": "Size müşteri temsilcimizi aktarıyorum. Lütfen hattan ayrılmayınız.",
+  "passed": true
+ },
+ "agent-busy": {
+  "text": "Şu anda tüm temsilcilerimiz başka bir görüşmede. Ana menüye dönüyorum.",
+  "cer": 0.0,
+  "min_pitch": 261,
+  "steps": 32,
+  "max_words": 6,
+  "attempt": 2,
+  "heard": "Şu anda tüm temsilcilerimiz başka bir görüşmede.  Ana menüye dönüyorum.",
+  "passed": true
+ },
+ "invalid": {
+  "text": "Geçersiz bir tuşlama yaptınız.",
+  "cer": 0.0,
+  "min_pitch": 214,
+  "steps": 32,
+  "max_words": 11,
+  "attempt": 1,
+  "heard": "Geçersiz bir tuşlama yaptınız.",
+  "passed": true
+ },
+ "goodbye": {
+  "text": "Freya Bank'ı aradığınız için teşekkür ederiz. İyi günler dileriz.",
+  "cer": 0.037037037037037035,
+  "min_pitch": 278,
+  "steps": 32,
+  "max_words": 6,
+  "attempt": 2,
+  "heard": "Freebank'ı aradığınız için teşekkür ederiz. İyi günler dileriz.",
+  "passed": true
+ }
+}

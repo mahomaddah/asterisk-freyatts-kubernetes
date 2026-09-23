@@ -1,7 +1,8 @@
+# name|phrasing 1 || phrasing 2 || ...   (the QC renderer tries phrasings in order)
 welcome|Freya Bank'a hoş geldiniz. Bu görüşme hizmet kalitesi için kayıt altına alınabilir.
-menu|Kart ekstreniz için bire, kayıp veya çalıntı kart için ikiye, müşteri temsilcisine bağlanmak için sıfıra basınız.
-card-info|Kartınızın son ödeme tarihi on beş ekim, asgari ödeme tutarı iki bin dört yüz liradır.
-lost-card|Kartınızı güvenliğiniz için geçici olarak kullanıma kapattık. Yeni kartınız üç iş günü içinde adresinize gönderilecektir.
+menu|Kart ekstreniz için bire, kayıp veya çalıntı kart için ikiye, müşteri temsilcisine bağlanmak için sıfıra basınız. || Ekstre bilgisi için bire basın. Kayıp kart için ikiye basın. Temsilciye bağlanmak için sıfıra basın. || Ekstre için bir. Kayıp kart için iki. Temsilci için sıfır.
+card-info|Kartınızın son ödeme tarihi on beş ekim, asgari ödeme tutarı iki bin dört yüz liradır. || Son ödeme tarihiniz on beş ekim. Asgari tutar iki bin dört yüz lira. || Son ödeme günü on beş ekim. Ödemeniz gereken en az tutar iki bin dört yüz liradır.
+lost-card|Kartınızı güvenliğiniz için geçici olarak kullanıma kapattık. Yeni kartınız üç iş günü içinde adresinize gönderilecektir. || Kartınızı güvenliğiniz için kullanıma kapattık. Yeni kartınız üç gün içinde adresinize ulaşacak. || Kartınız güvenliğiniz için kapatıldı. Yeni kartınızı birkaç gün içinde adresinize göndereceğiz.
 transfer|Sizi müşteri temsilcimize aktarıyorum, lütfen hattan ayrılmayınız.
 agent-busy|Şu anda tüm temsilcilerimiz başka bir görüşmede. Ana menüye dönüyorum.
 invalid|Geçersiz bir tuşlama yaptınız.

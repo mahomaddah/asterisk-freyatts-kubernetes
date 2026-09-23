@@ -17,9 +17,10 @@ out = pathlib.Path(args.out)
 out.mkdir(parents=True, exist_ok=True)
 
 for line in pathlib.Path(args.prompts).read_text(encoding="utf-8").splitlines():
-    if not line.strip():
+    if not line.strip() or line.startswith("#"):
         continue
-    name, text = line.split("|", 1)
+    name, variants = line.split("|", 1)
+    text = variants.split("||")[0].strip()  # first phrasing; QC renderer tries the others
     req = urllib.request.Request(
         f"{args.url}/v1/synthesize",
         data=json.dumps({"text": text, "sample_rate": 8000}).encode(),
