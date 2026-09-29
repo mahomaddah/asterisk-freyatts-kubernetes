@@ -1,0 +1,5 @@
+# /etc/rancher/k3s/registries.yaml: pull lab images from the node-local registry over plain HTTP.
+mirrors:
+  "localhost:5000":
+    endpoint:
+      - "http://127.0.0.1:5000"

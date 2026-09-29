@@ -1,0 +1,6 @@
+apiVersion: v2
+name: freya-voice
+description: On-prem AI voice line - Asterisk, real-time voice agent, FreyaTTS and Whisper on GPU
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

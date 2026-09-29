@@ -1,0 +1,19 @@
+# NVIDIA device plugin with time-slicing: one physical GPU is advertised as 4 nvidia.com/gpu,
+# so the TTS, STT (and optionally LLM) pods can share the single GTX 1050.
+#
+# Time-slicing = the pods take turns on the GPU. No memory isolation and no fault isolation:
+# one pod can exhaust VRAM for all. On A100/H100 MIG gives hard partitions instead; MPS gives
+# concurrent kernels with limits. On a Pascal laptop GPU time-slicing is the only option, so
+# memory is budgeted by hand (see docs/phase-3-kubernetes.md).
+runtimeClassName: nvidia
+config:
+  map:
+    default: |-
+      version: v1
+      sharing:
+        timeSlicing:
+          renameByDefault: false
+          failRequestsGreaterThanOne: true
+          resources:
+            - name: nvidia.com/gpu
+              replicas: 4

@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: freya-tts
+  labels:
+    app: freya-tts
+    {{- include "fv.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.tts.replicas }}
+  selector: {matchLabels: {app: freya-tts}}
+  template:
+    metadata:
+      labels: {app: freya-tts}
+      annotations: {prometheus.io/scrape: "true", prometheus.io/port: "8080", prometheus.io/path: /metrics/}
+    spec:
+      runtimeClassName: nvidia
+      {{- include "fv.podSecurity" . | nindent 6 }}
+      containers:
+        - name: tts
+          image: {{ include "fv.image" (dict "root" . "name" "freya-tts") }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- include "fv.containerSecurity" . | nindent 10 }}
+          env:
+            - {name: TTS_DEVICE, value: cuda}
+          ports: [{name: http, containerPort: 8080}]
+          readinessProbe: {httpGet: {path: /healthz, port: http}, periodSeconds: 5}
+          startupProbe: {httpGet: {path: /healthz, port: http}, periodSeconds: 5, failureThreshold: 60}
+          resources:
+            requests: {{- toYaml .Values.tts.resources.requests | nindent 14 }}
+            limits:
+              {{- toYaml .Values.tts.resources.limits | nindent 14 }}
+              nvidia.com/gpu: {{ .Values.tts.gpu }}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: freya-tts, labels: {app: freya-tts}}
+spec:
+  selector: {app: freya-tts}
+  ports: [{name: http, port: 8080, targetPort: http}]

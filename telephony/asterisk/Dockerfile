@@ -8,6 +8,8 @@ RUN apt-get update \
 # Our config files are templates rendered over the package defaults at start-up
 # (secrets and the public address are filled in from the environment).
 COPY config/ /etc/asterisk-templates/
+# IVR prompts rendered by scripts/render_prompts_verified.py (ASR + pitch QC), shipped in the image
+COPY sounds/tr/freya/ /usr/share/asterisk/sounds/tr/freya/
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 

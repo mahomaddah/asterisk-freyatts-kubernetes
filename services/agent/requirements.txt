@@ -5,6 +5,6 @@ scipy
 torch
 silero-vad
 prometheus-client
-# STT backend: mlx-whisper on Apple Silicon, faster-whisper on CUDA
+requests
+# STT backend: "http" (services/stt) in Kubernetes; locally mlx-whisper on Apple Silicon
 mlx-whisper; sys_platform == "darwin"
-faster-whisper; sys_platform != "darwin"

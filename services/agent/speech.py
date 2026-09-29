@@ -62,7 +62,25 @@ class FasterWhisper:
         return " ".join(s.text for s in segments).strip()
 
 
+class HttpSTT:
+    """Remote STT service (services/stt): keeps the GPU out of the agent pod."""
+
+    def __init__(self, url: str):
+        import requests
+        self.session = requests.Session()
+        self.url = url.rstrip("/") + "/v1/transcribe"
+
+    def transcribe(self, audio: np.ndarray) -> str:
+        buf = io.BytesIO()
+        sf.write(buf, audio, STT_RATE, subtype="PCM_16", format="WAV")
+        r = self.session.post(self.url, data=buf.getvalue(), headers={"Content-Type": "audio/wav"}, timeout=15)
+        r.raise_for_status()
+        return r.json()["text"]
+
+
 def load_stt(backend: str, model: str):
+    if backend == "http":
+        return HttpSTT(model)  # model = service URL
     if backend == "mlx":
         return MlxWhisper(model)
     if backend == "faster-whisper":

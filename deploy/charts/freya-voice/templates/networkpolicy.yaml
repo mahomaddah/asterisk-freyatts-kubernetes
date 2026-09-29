@@ -1,0 +1,18 @@
+{{- if .Values.networkPolicy.enabled }}
+# Zero egress: pods may talk to each other, to DNS and to the LLM endpoint, nothing else.
+# (Asterisk runs with hostNetwork, so it is outside pod NetworkPolicy; the node firewall covers it.)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: default-deny-egress}
+spec:
+  podSelector: {}
+  policyTypes: [Egress]
+  egress:
+    - to: [{podSelector: {}}]
+    - to: [{namespaceSelector: {}, podSelector: {matchLabels: {k8s-app: kube-dns}}}]
+      ports: [{protocol: UDP, port: 53}, {protocol: TCP, port: 53}]
+    - to: [{ipBlock: {cidr: {{ .Values.networkPolicy.llmCIDR }}}}]
+      ports: [{protocol: TCP, port: 11434}]
+    # voice-agent -> Asterisk ARI on the node, and RTP to Asterisk
+    - to: [{ipBlock: {cidr: {{ .Values.asterisk.externalIP }}/32}}]
+{{- end }}

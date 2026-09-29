@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: asterisk
+  labels:
+    app: asterisk
+    {{- include "fv.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy: {type: Recreate}          # hostNetwork ports cannot be held by two pods at once
+  selector: {matchLabels: {app: asterisk}}
+  template:
+    metadata: {labels: {app: asterisk}}
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+        - name: asterisk
+          image: {{ include "fv.image" (dict "root" . "name" "asterisk") }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - {name: EXTERNAL_IP, value: {{ .Values.asterisk.externalIP | quote }}}
+          envFrom: [{secretRef: {name: {{ .Values.existingSecret }}}}]
+          volumeMounts: [{name: dynamic-sounds, mountPath: /srv/dynamic-sounds, readOnly: true}]
+          readinessProbe:
+            exec: {command: [asterisk, -rx, "core show uptime"]}
+            periodSeconds: 10
+          resources: {{- toYaml .Values.asterisk.resources | nindent 12 }}
+      volumes:
+        - name: dynamic-sounds
+          hostPath: {path: {{ .Values.dynamicSoundsHostPath }}, type: DirectoryOrCreate}

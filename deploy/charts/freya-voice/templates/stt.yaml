@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: whisper-stt
+  labels:
+    app: whisper-stt
+    {{- include "fv.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.stt.replicas }}
+  selector: {matchLabels: {app: whisper-stt}}
+  template:
+    metadata:
+      labels: {app: whisper-stt}
+      annotations: {prometheus.io/scrape: "true", prometheus.io/port: "8081", prometheus.io/path: /metrics/}
+    spec:
+      runtimeClassName: nvidia
+      {{- include "fv.podSecurity" . | nindent 6 }}
+      containers:
+        - name: stt
+          image: {{ include "fv.image" (dict "root" . "name" "stt") }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- include "fv.containerSecurity" . | nindent 10 }}
+          env:
+            - {name: STT_MODEL, value: {{ .Values.stt.model | quote }}}
+            - {name: STT_COMPUTE_TYPE, value: {{ .Values.stt.computeType | quote }}}
+          ports: [{name: http, containerPort: 8081}]
+          readinessProbe: {httpGet: {path: /healthz, port: http}, periodSeconds: 5}
+          startupProbe: {httpGet: {path: /healthz, port: http}, periodSeconds: 5, failureThreshold: 60}
+          resources:
+            requests: {{- toYaml .Values.stt.resources.requests | nindent 14 }}
+            limits:
+              {{- toYaml .Values.stt.resources.limits | nindent 14 }}
+              nvidia.com/gpu: {{ .Values.stt.gpu }}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: whisper-stt, labels: {app: whisper-stt}}
+spec:
+  selector: {app: whisper-stt}
+  ports: [{name: http, port: 8081, targetPort: http}]

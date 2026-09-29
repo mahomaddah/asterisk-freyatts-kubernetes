@@ -3,4 +3,5 @@ __pycache__/
 bench/out/
 *.wav
 .env
-telephony/asterisk/sounds/
+telephony/asterisk/sounds/dynamic/
+!telephony/asterisk/sounds/tr/freya/*.wav

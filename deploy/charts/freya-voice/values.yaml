@@ -1,0 +1,53 @@
+# All images come from the cluster-local registry (air-gapped: nothing is pulled from the internet).
+image:
+  registry: localhost:5000
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
+
+# Secret with SIP_PASSWORD_1001, SIP_PASSWORD_1002, ARI_USER, ARI_PASSWORD.
+# Created out of band (kubectl create secret ...); never stored in the chart or in git.
+existingSecret: freya-voice-secrets
+
+asterisk:
+  # hostNetwork: SIP and a 100-port RTP range on the node's own address. Publishing RTP
+  # ranges through a Service is fragile (NAT, per-port Services); telephony pods on
+  # dedicated nodes with hostNetwork is the usual on-prem pattern.
+  externalIP: 192.168.1.8        # address phones register to (node IP)
+  resources:
+    requests: {cpu: 100m, memory: 128Mi}
+    limits: {memory: 512Mi}
+
+tts:
+  replicas: 1
+  gpu: 1                         # one time-sliced share of the node GPU
+  resources:
+    requests: {cpu: 500m, memory: 2Gi}
+    limits: {memory: 4Gi}
+
+stt:
+  replicas: 1
+  gpu: 1
+  model: small
+  computeType: int8              # Pascal: no fast fp16 path
+  resources:
+    requests: {cpu: 500m, memory: 1Gi}
+    limits: {memory: 3Gi}
+
+agent:
+  llm:
+    # OpenAI/Ollama-compatible endpoint. Default: Ollama on the Mac (Apple GPU), outside the cluster.
+    url: http://192.168.1.2:11434
+    model: qwen3.5:2b-q4_K_M
+    router: constrained
+  humanAgentEndpoint: PJSIP/1002
+  resources:
+    requests: {cpu: 500m, memory: 1Gi}
+    limits: {memory: 2Gi}
+
+# Shared between the agent (writes transfer briefings) and Asterisk (plays them).
+# hostPath is fine on one node; multi-node needs an RWX volume or ARI file upload.
+dynamicSoundsHostPath: /var/lib/freya-voice/dynamic-sounds
+
+networkPolicy:
+  enabled: true                  # default-deny egress; only in-namespace, DNS and the LLM endpoint
+  llmCIDR: 192.168.1.2/32
