@@ -31,7 +31,8 @@ RUN python -c "from huggingface_hub import hf_hub_download as d; \
 d('freyavoice/freya-tts','config.json'); d('freyavoice/freya-tts','model.safetensors'); \
 d('openbmb/VoxCPM2','audiovae.pth')"
 
-ENV HF_HUB_OFFLINE=1
+# numba (via librosa) must cache somewhere writable for the non-root user
+ENV HF_HUB_OFFLINE=1 NUMBA_CACHE_DIR=/tmp/numba
 WORKDIR /app
 COPY app.py .
 RUN useradd -r -u 10001 tts && chown -R tts /models

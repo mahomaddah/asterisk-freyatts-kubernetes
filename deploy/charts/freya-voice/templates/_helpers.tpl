@@ -1,5 +1,5 @@
 {{- define "fv.image" -}}
-{{ .root.Values.image.registry }}/{{ .name }}:{{ .root.Values.image.tag }}
+{{ .root.Values.image.registry }}/{{ .name }}:{{ index .root.Values.image.tags .name }}
 {{- end -}}
 
 {{- define "fv.labels" -}}

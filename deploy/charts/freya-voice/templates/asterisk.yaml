@@ -25,6 +25,7 @@ spec:
           readinessProbe:
             exec: {command: [asterisk, -rx, "core show uptime"]}
             periodSeconds: 10
+            timeoutSeconds: 5          # the CLI round-trip takes >1 s when the node is I/O bound
           resources: {{- toYaml .Values.asterisk.resources | nindent 12 }}
       volumes:
         - name: dynamic-sounds

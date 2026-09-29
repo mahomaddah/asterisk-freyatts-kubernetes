@@ -35,8 +35,9 @@ class Config:
     router: str = os.environ.get("ROUTER", "constrained")
     stt_backend: str = os.environ.get("STT_BACKEND", "mlx")
     stt_model: str = os.environ.get("STT_MODEL", "small")
-    dynamic_sounds: pathlib.Path = pathlib.Path(os.environ.get(
-        "DYNAMIC_SOUNDS_DIR", pathlib.Path(__file__).resolve().parents[2] / "telephony/asterisk/sounds/dynamic"))
+    # repo layout default only when the env var is unset (inside the image the repo is not there)
+    dynamic_sounds: pathlib.Path = pathlib.Path(os.environ.get("DYNAMIC_SOUNDS_DIR") or
+                                                pathlib.Path(__file__).resolve().parents[2] / "telephony/asterisk/sounds/dynamic")
     dynamic_sounds_in_asterisk: str = os.environ.get("DYNAMIC_SOUNDS_IN_ASTERISK", "/srv/dynamic-sounds")
     metrics_port: int = int(os.environ.get("METRICS_PORT", "9464"))
     console_host: str = os.environ.get("CONSOLE_HOST", "127.0.0.1")

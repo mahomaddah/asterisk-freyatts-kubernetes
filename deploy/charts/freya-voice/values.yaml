@@ -1,8 +1,12 @@
 # All images come from the cluster-local registry (air-gapped: nothing is pulled from the internet).
 image:
   registry: localhost:5000
-  tag: "0.1.0"
   pullPolicy: IfNotPresent
+  tags:                          # per component, so one service can roll without the others
+    asterisk: "0.1.0"
+    freya-tts: "0.1.0"
+    stt: "0.1.1"
+    voice-agent: "0.1.1"
 
 # Secret with SIP_PASSWORD_1001, SIP_PASSWORD_1002, ARI_USER, ARI_PASSWORD.
 # Created out of band (kubectl create secret ...); never stored in the chart or in git.

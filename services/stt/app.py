@@ -20,7 +20,11 @@ COMPUTE_TYPE = os.environ.get("STT_COMPUTE_TYPE", "int8")
 LANGUAGE = os.environ.get("STT_LANGUAGE", "tr")
 
 model = WhisperModel(MODEL, device=DEVICE, compute_type=COMPUTE_TYPE)
-model.transcribe(np.zeros(16000, dtype=np.float32), language=LANGUAGE)  # warm-up
+# Warm-up must run the decoder too: on silence Whisper emits nothing, CUDA kernels stay
+# unloaded and the first real caller paid ~3 s instead of ~0.6 s. Noise makes it decode.
+_noise = (np.random.default_rng(0).standard_normal(3 * 16000) * 0.1).astype(np.float32)
+for _ in range(2):
+    list(model.transcribe(_noise, language=LANGUAGE, beam_size=1)[0])
 
 SECONDS = Histogram("stt_transcribe_seconds", "Wall time per request", ["model"],
                     buckets=(0.05, 0.1, 0.2, 0.3, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0))
