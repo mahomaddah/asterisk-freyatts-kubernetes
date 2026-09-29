@@ -1,0 +1,16 @@
+# kubectl apply -f deploy/smoke/gpu-smoke-test.yaml && kubectl logs gpu-smoke-test
+# Proves the whole chain: scheduler -> device plugin -> nvidia RuntimeClass -> driver.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gpu-smoke-test
+spec:
+  restartPolicy: Never
+  runtimeClassName: nvidia
+  containers:
+    - name: cuda
+      image: nvidia/cuda:12.4.1-base-ubuntu22.04   # CUDA 12.x: CUDA 13 dropped Pascal
+      command: ["nvidia-smi", "--query-gpu=name,memory.total,driver_version", "--format=csv"]
+      resources:
+        limits:
+          nvidia.com/gpu: 1
