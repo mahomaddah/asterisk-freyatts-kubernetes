@@ -3,10 +3,10 @@ image:
   registry: localhost:5000
   pullPolicy: IfNotPresent
   tags:                          # per component, so one service can roll without the others
-    asterisk: "0.1.0"
+    asterisk: "0.1.2"
     freya-tts: "0.1.0"
     stt: "0.1.1"
-    voice-agent: "0.1.1"
+    voice-agent: "0.1.2"
 
 # Secret with SIP_PASSWORD_1001, SIP_PASSWORD_1002, ARI_USER, ARI_PASSWORD.
 # Created out of band (kubectl create secret ...); never stored in the chart or in git.

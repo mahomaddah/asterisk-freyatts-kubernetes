@@ -4,8 +4,12 @@ set -e
 : "${EXTERNAL_IP:?EXTERNAL_IP must be set (the host LAN/public IP phones connect to)}"
 : "${SIP_PASSWORD_1001:?}" "${SIP_PASSWORD_1002:?}" "${ARI_USER:?}" "${ARI_PASSWORD:?}"
 
+# Substitute ONLY our variables. A bare `envsubst` also replaced Asterisk's own dialplan
+# variables (${EXTEN}, ${CALLERID(all)}) with empty strings: Dial(PJSIP/${EXTEN}) became
+# Dial(PJSIP/) and phone-to-phone calls silently failed.
+VARS='${EXTERNAL_IP} ${SIP_PASSWORD_1001} ${SIP_PASSWORD_1002} ${ARI_USER} ${ARI_PASSWORD}'
 for f in /etc/asterisk-templates/*.conf; do
-  envsubst < "$f" > "/etc/asterisk/$(basename "$f")"
+  envsubst "$VARS" < "$f" > "/etc/asterisk/$(basename "$f")"
 done
 
 chown -R asterisk:asterisk /etc/asterisk /var/lib/asterisk /var/spool/asterisk /var/log/asterisk

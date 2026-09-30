@@ -95,7 +95,9 @@ const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<
 const ms = (v) => (v == null ? "" : `${Math.round(v)} ms`);
 
 function body(e) {
-  const audio = e.audio ? `<audio controls preload="none" src="${e.audio}"></audio>` : "";
+  // caller audio is deleted after 30 min (KVKK); say so instead of showing a broken player
+  const audio = e.audio ? `<audio controls preload="none" src="${e.audio}"
+      onerror="this.outerHTML='<div class=&quot;meta&quot;>audio deleted (30 min retention)</div>'"></audio>` : "";
   switch (e.kind) {
     case "call_start": return `Call from <b>${esc(e.caller)}</b><div class="meta">bridge ${esc(e.bridge)} · rtp :${e.port}</div>`;
     case "call_end": return `Call ended`;
