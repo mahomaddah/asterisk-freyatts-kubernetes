@@ -11,6 +11,7 @@ from dataclasses import dataclass
 
 from prometheus_client import start_http_server
 
+import metrics
 from ari import Ari
 from bank_tools import PERSONA, bank, fixed_phrases
 from call import AGENT_BUSY, DTMF_TOOLS, GREETING, HOLD, UNCLEAR, Call
@@ -54,7 +55,9 @@ class App:
         self.tts = TTSClient(cfg.tts_url)
         self.stt = load_stt(cfg.stt_backend, cfg.stt_model)
         self.stt_pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="stt")  # one GPU stream
-        self.stt_label = f"{cfg.stt_backend}/{cfg.stt_model}"
+        self.stt_label = (cfg.stt_model.split("//")[-1] if cfg.stt_backend == "http"
+                          else f"{cfg.stt_backend}/{cfg.stt_model}")
+        metrics.init_labels([*bank.tools, "none"])
         self.console = Console(cfg.console_audio, {
             "stt": self.stt_label, "llm": cfg.llm_model, "router": cfg.router, "tts": cfg.tts_url})
         self.calls: dict[str, Call] = {}
@@ -70,7 +73,9 @@ class App:
     async def run(self):
         await self.console.start(self.cfg.console_host, self.cfg.console_port)
         log.info("call inspector on http://%s:%d", self.cfg.console_host, self.cfg.console_port)
-        await self.router.decide("merhaba", [])  # load the LLM into memory before the first call
+        # Load the LLM into memory before the first call. If it is down, start anyway: calls
+        # degrade to guards/DTMF/human (see Router.decide) instead of the pod crash-looping.
+        await self.router.warm()
         await self.tts.warm([GREETING, UNCLEAR, AGENT_BUSY, HOLD, SAFE_REPLY, DECLINED_HUMAN, *fixed_phrases()])
         log.info("pre-rendered %d fixed phrases", len(self.tts.cache))
         async with Ari(self.cfg.ari_url, self.cfg.ari_user, self.cfg.ari_password, self.cfg.app) as ari:

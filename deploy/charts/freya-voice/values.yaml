@@ -6,7 +6,7 @@ image:
     asterisk: "0.1.2"
     freya-tts: "0.1.0"
     stt: "0.1.1"
-    voice-agent: "0.1.2"
+    voice-agent: "0.1.5"
 
 # Secret with SIP_PASSWORD_1001, SIP_PASSWORD_1002, ARI_USER, ARI_PASSWORD.
 # Created out of band (kubectl create secret ...); never stored in the chart or in git.
@@ -55,3 +55,9 @@ dynamicSoundsHostPath: /var/lib/freya-voice/dynamic-sounds
 networkPolicy:
   enabled: true                  # default-deny egress; only in-namespace, DNS and the LLM endpoint
   llmCIDR: 192.168.1.2/32
+
+monitoring:
+  enabled: true                  # needs the Prometheus Operator CRDs (kube-prometheus-stack)
+  gpuExporter:
+    # nvidia-smi based exporter: DCGM does not support GeForce cards like the GTX 1050
+    image: utkuozdemir/nvidia_gpu_exporter:1.2.1

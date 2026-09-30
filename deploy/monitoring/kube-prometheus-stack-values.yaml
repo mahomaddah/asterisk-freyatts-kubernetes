@@ -1,0 +1,36 @@
+# Prometheus + Grafana sized for a 16 GB single-node lab.
+# helm upgrade -i monitoring prometheus-community/kube-prometheus-stack -n monitoring \
+#   -f deploy/monitoring/kube-prometheus-stack-values.yaml
+alertmanager:
+  enabled: false                   # no one on call for a home lab; Grafana is the UI
+prometheus:
+  prometheusSpec:
+    retention: 7d
+    retentionSize: 5GB
+    # pick up ServiceMonitors from every namespace / release (freya-voice ships its own)
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    resources: {requests: {cpu: 200m, memory: 512Mi}, limits: {memory: 1536Mi}}
+    storageSpec:
+      volumeClaimTemplate:
+        spec: {accessModes: [ReadWriteOnce], resources: {requests: {storage: 8Gi}}}
+grafana:
+  admin:
+    existingSecret: grafana-admin  # created out of band, never in git
+    userKey: admin-user
+    passwordKey: admin-password
+  sidecar:
+    dashboards: {enabled: true, label: grafana_dashboard, searchNamespace: ALL}
+  # 384Mi was OOMKilled 5x in 15 min while rendering the dashboard every 10 s
+  resources: {requests: {cpu: 50m, memory: 256Mi}, limits: {memory: 768Mi}}
+  grafana.ini:
+    analytics: {reporting_enabled: false, check_for_updates: false}   # no phoning home
+kube-state-metrics:
+  resources: {requests: {cpu: 20m, memory: 64Mi}}
+prometheus-node-exporter:
+  resources: {requests: {cpu: 20m, memory: 32Mi}}
+# k3s runs these inside the k3s binary, there are no separate pods to scrape
+kubeControllerManager: {enabled: false}
+kubeScheduler: {enabled: false}
+kubeProxy: {enabled: false}
+kubeEtcd: {enabled: false}

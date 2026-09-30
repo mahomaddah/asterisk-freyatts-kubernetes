@@ -1,0 +1,60 @@
+{{- if .Values.monitoring.enabled }}
+{{- range $svc := list (dict "name" "voice-agent" "port" "metrics" "path" "/metrics")
+                       (dict "name" "freya-tts" "port" "http" "path" "/metrics/")
+                       (dict "name" "whisper-stt" "port" "http" "path" "/metrics/")
+                       (dict "name" "gpu-exporter" "port" "metrics" "path" "/metrics") }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ $svc.name }}
+  labels: {app: {{ $svc.name }}}
+spec:
+  selector: {matchLabels: {app: {{ $svc.name }}}}
+  endpoints:
+    - {port: {{ $svc.port }}, path: {{ $svc.path }}, interval: 15s}
+{{- end }}
+---
+# GPU temperature, utilisation and memory per GPU node. Sees the whole card via the nvidia
+# runtime without taking one of the time-sliced nvidia.com/gpu shares.
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: gpu-exporter
+  labels: {app: gpu-exporter}
+spec:
+  selector: {matchLabels: {app: gpu-exporter}}
+  template:
+    metadata: {labels: {app: gpu-exporter}}
+    spec:
+      runtimeClassName: nvidia
+      nodeSelector: {nvidia.com/gpu.present: "true"}
+      containers:
+        - name: exporter
+          image: {{ .Values.monitoring.gpuExporter.image }}
+          # Driver 580's nvidia-smi exposes fields with units in their names ("... [us]"); the
+          # exporter's default AUTO field list turns them into invalid metric names and panics.
+          args: ["--query-field-names=uuid,name,temperature.gpu,utilization.gpu,utilization.memory,memory.used,memory.total,clocks.sm,pstate"]
+          env:
+            - {name: NVIDIA_VISIBLE_DEVICES, value: all}
+            - {name: NVIDIA_DRIVER_CAPABILITIES, value: utility}
+          ports: [{name: metrics, containerPort: 9835}]
+          resources: {requests: {cpu: 20m, memory: 32Mi}, limits: {memory: 128Mi}}
+          securityContext: {allowPrivilegeEscalation: false, capabilities: {drop: [ALL]}}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: gpu-exporter, labels: {app: gpu-exporter}}
+spec:
+  selector: {app: gpu-exporter}
+  ports: [{name: metrics, port: 9835, targetPort: metrics}]
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: freya-voice-dashboard
+  labels: {grafana_dashboard: "1"}     # picked up by the Grafana dashboard sidecar
+data:
+  freya-voice.json: |-
+{{ .Files.Get "dashboards/freya-voice.json" | indent 4 }}
+{{- end }}

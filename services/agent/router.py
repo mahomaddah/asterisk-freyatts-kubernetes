@@ -8,9 +8,15 @@ import json
 import re
 from dataclasses import dataclass, field
 
+import logging
+
 import aiohttp
 
+import metrics
 from tools import NONE_TOOL, ToolRegistry
+
+log = logging.getLogger("router")
+LLM_TIMEOUT_S = 4  # a caller will not wait longer than this in silence
 
 # Routes a bank wants deterministic: asking for a human always reaches a human.
 GUARDS = [
@@ -33,7 +39,7 @@ class Decision:
     tool: str
     arguments: dict = field(default_factory=dict)
     reply: str = ""
-    source: str = "llm"  # "guard" | "llm"
+    source: str = "llm"  # "guard" | "llm" | "output_guard" | "llm_down"
 
 
 class Router:
@@ -52,16 +58,35 @@ class Router:
             return Decision(NONE_TOOL, {}, DECLINED_HUMAN, source="guard")
         if offered_human and YES.search(utterance):
             return Decision("transfer_to_agent", {"summary": history[-2]["content"]}, source="guard")
-        decision = await self._llm(utterance, history)
+        try:
+            decision = await self._llm(utterance, history)
+        except Exception as exc:
+            # Graceful degradation: without the LLM the guards and DTMF still work, and anything
+            # else goes to a human instead of leaving the caller in silence or in a loop.
+            metrics.LLM_ERRORS.inc()
+            log.warning("LLM unavailable (%r); routing to a human", exc)
+            return Decision("transfer_to_agent", {"summary": utterance}, source="llm_down")
         # facts the model may have invented, or a vague "you can talk to an agent" that leaves the
         # caller unsure what to do: replace with one fixed question the yes-guard understands
         if decision.tool == NONE_TOOL and (FACT_PATTERN.search(decision.reply) or MENTIONS_HUMAN.search(decision.reply)):
             return Decision(NONE_TOOL, {}, SAFE_REPLY, source="output_guard")
         return decision
 
-    async def _chat(self, body: dict) -> dict:
+    async def warm(self) -> bool:
+        """Load the model into memory. Not a caller turn: a cold load may take far longer than
+        LLM_TIMEOUT_S and must not count as an LLM failure."""
+        try:
+            await self._chat({"model": self.model, "stream": False, "think": False, "keep_alive": "60m",
+                              "messages": [{"role": "user", "content": "merhaba"}],
+                              "options": {"num_predict": 1}}, timeout=120)
+            return True
+        except Exception as exc:
+            log.warning("LLM warm-up failed (%r); calls will degrade until it is reachable", exc)
+            return False
+
+    async def _chat(self, body: dict, timeout: float = LLM_TIMEOUT_S) -> dict:
         async with aiohttp.ClientSession() as s:
-            async with s.post(self.url, json=body, timeout=aiohttp.ClientTimeout(total=15)) as r:
+            async with s.post(self.url, json=body, timeout=aiohttp.ClientTimeout(total=timeout)) as r:
                 r.raise_for_status()
                 return (await r.json())["message"]
 
