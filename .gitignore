@@ -7,3 +7,4 @@ telephony/asterisk/sounds/dynamic/
 !telephony/asterisk/sounds/tr/freya/*.wav
 .DS_Store
 *.log
+!services/agent/prompts/*.wav
