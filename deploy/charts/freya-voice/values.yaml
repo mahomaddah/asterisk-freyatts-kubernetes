@@ -3,7 +3,7 @@ image:
   registry: localhost:5000
   pullPolicy: IfNotPresent
   tags:                          # per component, so one service can roll without the others
-    asterisk: "0.1.2"
+    asterisk: "0.1.3"
     freya-tts: "0.1.0"
     stt: "0.1.1"
     voice-agent: "0.1.5"
@@ -17,6 +17,10 @@ asterisk:
   # ranges through a Service is fragile (NAT, per-port Services); telephony pods on
   # dedicated nodes with hostNetwork is the usual on-prem pattern.
   externalIP: 192.168.1.8        # address phones register to (node IP)
+  # Record calls to <recordingsHostPath> on the node. Off by default: recording real callers
+  # needs their consent (KVKK). For demos and QA only.
+  recordCalls: false
+  recordingsHostPath: /var/lib/freya-voice/recordings
   resources:
     requests: {cpu: 100m, memory: 128Mi}
     limits: {memory: 512Mi}

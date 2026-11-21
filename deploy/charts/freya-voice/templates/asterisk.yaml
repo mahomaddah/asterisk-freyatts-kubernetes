@@ -20,8 +20,11 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             - {name: EXTERNAL_IP, value: {{ .Values.asterisk.externalIP | quote }}}
+            - {name: RECORD_CALLS, value: {{ ternary "yes" "no" .Values.asterisk.recordCalls | quote }}}
           envFrom: [{secretRef: {name: {{ .Values.existingSecret }}}}]
-          volumeMounts: [{name: dynamic-sounds, mountPath: /srv/dynamic-sounds, readOnly: true}]
+          volumeMounts:
+            - {name: dynamic-sounds, mountPath: /srv/dynamic-sounds, readOnly: true}
+            - {name: recordings, mountPath: /var/spool/asterisk/recordings}
           readinessProbe:
             exec: {command: [asterisk, -rx, "core show uptime"]}
             periodSeconds: 10
@@ -30,3 +33,5 @@ spec:
       volumes:
         - name: dynamic-sounds
           hostPath: {path: {{ .Values.dynamicSoundsHostPath }}, type: DirectoryOrCreate}
+        - name: recordings
+          hostPath: {path: {{ .Values.asterisk.recordingsHostPath }}, type: DirectoryOrCreate}
