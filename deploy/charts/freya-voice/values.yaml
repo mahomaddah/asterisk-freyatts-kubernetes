@@ -6,7 +6,7 @@ image:
     asterisk: "0.1.3"
     freya-tts: "0.1.0"
     stt: "0.1.1"
-    voice-agent: "0.1.5"
+    voice-agent: "0.1.7"
 
 # Secret with SIP_PASSWORD_1001, SIP_PASSWORD_1002, ARI_USER, ARI_PASSWORD.
 # Created out of band (kubectl create secret ...); never stored in the chart or in git.
@@ -16,7 +16,7 @@ asterisk:
   # hostNetwork: SIP and a 100-port RTP range on the node's own address. Publishing RTP
   # ranges through a Service is fragile (NAT, per-port Services); telephony pods on
   # dedicated nodes with hostNetwork is the usual on-prem pattern.
-  externalIP: 192.168.1.8        # address phones register to (node IP)
+  externalIP: 192.168.1.9        # address phones register to (node IP)
   # Record calls to <recordingsHostPath> on the node. Off by default: recording real callers
   # needs their consent (KVKK). For demos and QA only.
   recordCalls: false
@@ -44,7 +44,7 @@ stt:
 agent:
   llm:
     # OpenAI/Ollama-compatible endpoint. Default: Ollama on the Mac (Apple GPU), outside the cluster.
-    url: http://192.168.1.2:11434
+    url: http://192.168.1.3:11434
     model: qwen3.5:2b-q4_K_M
     router: constrained
   humanAgentEndpoint: PJSIP/1002
@@ -58,7 +58,7 @@ dynamicSoundsHostPath: /var/lib/freya-voice/dynamic-sounds
 
 networkPolicy:
   enabled: true                  # default-deny egress; only in-namespace, DNS and the LLM endpoint
-  llmCIDR: 192.168.1.2/32
+  llmCIDR: 192.168.1.3/32
 
 monitoring:
   enabled: true                  # needs the Prometheus Operator CRDs (kube-prometheus-stack)

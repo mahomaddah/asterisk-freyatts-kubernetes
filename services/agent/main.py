@@ -76,7 +76,18 @@ class App:
         # Load the LLM into memory before the first call. If it is down, start anyway: calls
         # degrade to guards/DTMF/human (see Router.decide) instead of the pod crash-looping.
         await self.router.warm()
-        await self.tts.warm([GREETING, UNCLEAR, AGENT_BUSY, HOLD, SAFE_REPLY, DECLINED_HUMAN, *fixed_phrases()])
+        # TTS may still be loading its model after a node reboot: wait for it instead of
+        # crash-looping (a reboot used to cost ~40 restarts before the pod settled).
+        verified = self.tts.load_verified(pathlib.Path(__file__).with_name("prompts"))
+        log.info("loaded %d QC-verified phrase recordings", verified)
+        phrases = [GREETING, UNCLEAR, AGENT_BUSY, HOLD, SAFE_REPLY, DECLINED_HUMAN, *fixed_phrases()]
+        for attempt in range(60):
+            try:
+                await self.tts.warm(phrases)
+                break
+            except Exception as exc:
+                log.info("TTS not ready yet (%r), retrying in 5 s", exc)
+                await asyncio.sleep(5)
         log.info("pre-rendered %d fixed phrases", len(self.tts.cache))
         async with Ari(self.cfg.ari_url, self.cfg.ari_user, self.cfg.ari_password, self.cfg.app) as ari:
             self.ari = ari

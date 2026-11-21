@@ -1,0 +1,92 @@
+{
+ "greeting": {
+  "text": "Freya Bank'a hoş geldiniz, ben Leyla. Size nasıl yardımcı olabilirim?",
+  "cer": 0.017857142857142856,
+  "min_pitch": 240,
+  "steps": 32,
+  "max_words": 11,
+  "attempt": 1,
+  "heard": "Freya Bank hoşgeldiniz ben Leyla. Size nasıl yardımcı olabilirim?",
+  "passed": true
+ },
+ "unclear": {
+  "text": "Özür dilerim, anlayamadım. Tekrar eder misiniz?",
+  "cer": 0.0,
+  "min_pitch": 276,
+  "steps": 32,
+  "max_words": 11,
+  "attempt": 4,
+  "heard": "Özür dilerim anlayamadım. Tekrar eder misiniz?",
+  "passed": true
+ },
+ "agent_busy": {
+  "text": "Şu anda tüm temsilcilerimiz dolu. Size ben yardımcı olmaya devam edeyim.",
+  "cer": 0.0,
+  "min_pitch": 270,
+  "steps": 32,
+  "max_words": 11,
+  "attempt": 1,
+  "heard": "Şu anda tüm temsilcilerimiz dolu. Size ben yardımcı olmaya devam edeyim.",
+  "passed": true
+ },
+ "hold": {
+  "text": "Temsilcimiz birazdan sizinle olacak, lütfen bekleyin.",
+  "cer": 0.0,
+  "min_pitch": 172,
+  "steps": 32,
+  "max_words": 11,
+  "attempt": 1,
+  "heard": "Temsilcimiz birazdan sizinle olacak. Lütfen bekleyin.",
+  "passed": true
+ },
+ "safe_reply": {
+  "text": "Bu konuda size en doğru bilgiyi temsilcimiz verebilir, bağlanmak ister misiniz?",
+  "cer": 0.014925373134328358,
+  "min_pitch": 249,
+  "steps": 32,
+  "max_words": 6,
+  "attempt": 2,
+  "heard": "Bu konuda size en doğru bilgiyi temsilcimiz verebilir.  Sağlanmak ister misiniz?",
+  "passed": true
+ },
+ "declined_human": {
+  "text": "Peki, başka nasıl yardımcı olabilirim?",
+  "cer": 0.0,
+  "min_pitch": 261,
+  "steps": 32,
+  "max_words": 11,
+  "attempt": 1,
+  "heard": "Peki başka nasıl yardımcı olabilirim?",
+  "passed": true
+ },
+ "block_card": {
+  "text": "Kartınızı güvenliğiniz için kapattım. Yeni kartınız üç gün içinde adresinizde olacak.",
+  "cer": 0.0,
+  "min_pitch": 217,
+  "steps": 32,
+  "max_words": 6,
+  "attempt": 5,
+  "heard": "Kartınızı güvenliğiniz için kapattım. Yeni kartınız 3 gün içinde adresinizde olacak.",
+  "passed": true
+ },
+ "get_statement": {
+  "text": "Son ödeme tarihiniz on beş ekim. Asgari ödemeniz iki bin dört yüz lira.",
+  "cer": 0.0,
+  "min_pitch": 248,
+  "steps": 32,
+  "max_words": 11,
+  "attempt": 4,
+  "heard": "Son ödeme tarihiniz 15 Ekim. Asgari ödemeniz 2400 lira.",
+  "passed": true
+ },
+ "transfer": {
+  "text": "Sizi müşteri temsilcimize aktarıyorum, lütfen hattan ayrılmayın.",
+  "cer": 0.03571428571428571,
+  "min_pitch": 240,
+  "steps": 32,
+  "max_words": 11,
+  "attempt": 1,
+  "heard": "Size müşteri temsilcimizi aktarıyorum lütfen hattan ayrılmayın.",
+  "passed": true
+ }
+}

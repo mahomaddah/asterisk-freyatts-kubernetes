@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends libsndfile1 \
 
 WORKDIR /app
 COPY *.py console.html ./
+COPY prompts/ ./prompts/
 RUN useradd -r -u 10001 agent
 USER 10001
 ENV STT_BACKEND=http CONSOLE_HOST=0.0.0.0 CONSOLE_AUDIO_DIR=/tmp/console-audio

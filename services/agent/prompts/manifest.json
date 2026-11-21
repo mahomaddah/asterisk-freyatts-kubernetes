@@ -1,0 +1,11 @@
+{
+ "Freya Bank'a hoş geldiniz, ben Leyla. Size nasıl yardımcı olabilirim?": "greeting.wav",
+ "Özür dilerim, anlayamadım. Tekrar eder misiniz?": "unclear.wav",
+ "Şu anda tüm temsilcilerimiz dolu. Size ben yardımcı olmaya devam edeyim.": "agent_busy.wav",
+ "Temsilcimiz birazdan sizinle olacak, lütfen bekleyin.": "hold.wav",
+ "Bu konuda size en doğru bilgiyi temsilcimiz verebilir, bağlanmak ister misiniz?": "safe_reply.wav",
+ "Peki, başka nasıl yardımcı olabilirim?": "declined_human.wav",
+ "Kartınızı güvenliğiniz için kapattım. Yeni kartınız üç gün içinde adresinizde olacak.": "block_card.wav",
+ "Son ödeme tarihiniz on beş ekim. Asgari ödemeniz iki bin dört yüz lira.": "get_statement.wav",
+ "Sizi müşteri temsilcimize aktarıyorum, lütfen hattan ayrılmayın.": "transfer.wav"
+}

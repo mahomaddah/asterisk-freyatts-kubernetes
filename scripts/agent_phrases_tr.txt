@@ -1,0 +1,12 @@
+# Fixed sentences the voice agent speaks. Rendered with ASR + pitch QC into services/agent/prompts/
+# by: python scripts/render_prompts_verified.py --prompts scripts/agent_phrases_tr.txt --out services/agent/prompts --report bench/results/agent_phrase_qc.json
+# name|phrasing 1 || phrasing 2 || ...   (first passing phrasing wins; the agent then speaks exactly that text)
+greeting|Freya Bank'a hoş geldiniz, ben Leyla. Size nasıl yardımcı olabilirim? || Freya Bank'a hoş geldiniz. Ben Leyla, nasıl yardımcı olabilirim? || Merhaba, ben Leyla. Size nasıl yardımcı olabilirim? || Hoş geldiniz, ben Leyla. Nasıl yardımcı olabilirim?
+unclear|Kusura bakmayın, anlayamadım. Tekrar söyler misiniz? || Özür dilerim, anlayamadım. Tekrar eder misiniz? || Anlayamadım, tekrar söyler misiniz?
+agent_busy|Şu anda tüm temsilcilerimiz dolu. Size ben yardımcı olmaya devam edeyim. || Temsilcilerimiz şu an dolu. Size ben yardımcı olayım. || Şu an tüm temsilcilerimiz meşgul. Ben yardımcı olmaya devam edeyim.
+hold|Temsilcimiz birazdan sizinle olacak, lütfen bekleyin. || Temsilcimiz birazdan bağlanacak, lütfen bekleyin. || Lütfen bekleyin, temsilcimiz birazdan sizinle.
+safe_reply|Bu konuda size en doğru bilgiyi temsilcimiz verebilir, bağlanmak ister misiniz? || Bu konuda temsilcimiz yardımcı olabilir. Bağlanmak ister misiniz? || Bunu temsilcimiz daha iyi cevaplar. Sizi bağlayayım mı?
+declined_human|Peki, başka nasıl yardımcı olabilirim? || Peki, başka bir konuda yardımcı olabilir miyim? || Tamam, başka nasıl yardımcı olabilirim?
+block_card|Kartınızı güvenliğiniz için kullanıma kapattım. Yeni kartınız üç gün içinde adresinize ulaşacak. || Kartınızı güvenliğiniz için kapattım. Yeni kartınız üç gün içinde adresinizde olacak. || Kartınızı kapattım. Yeni kartınız üç gün içinde adresinize gelecek.
+get_statement|Son ödeme tarihiniz on beş ekim. Asgari tutar iki bin dört yüz lira. || Son ödeme tarihiniz on beş ekim. Asgari ödemeniz iki bin dört yüz lira. || Son ödeme günü on beş ekim. Ödemeniz gereken en az tutar iki bin dört yüz liradır.
+transfer|Sizi müşteri temsilcimize aktarıyorum, lütfen hattan ayrılmayın. || Sizi temsilcimize aktarıyorum, lütfen hattan ayrılmayın. || Sizi bir temsilciye bağlıyorum, lütfen bekleyin.

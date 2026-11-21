@@ -101,6 +101,25 @@ class TTSClient:
         self.cache_size = cache_size
         self.last_hit = False
 
+    def load_verified(self, folder) -> int:
+        """Load QC'd recordings of fixed phrases (scripts/render_prompts_verified.py).
+
+        FreyaTTS output depends on the device: the greeting rendered cleanly on Apple MPS but
+        inserted a stray word on the GTX 1050 with the same seed. Fixed phrases are therefore
+        rendered once, checked with Whisper + pitch, and shipped as audio, not re-synthesized."""
+        import json
+        import pathlib
+        folder = pathlib.Path(folder)
+        manifest = folder / "manifest.json"
+        if not manifest.exists():
+            return 0
+        for text, name in json.loads(manifest.read_text(encoding="utf-8")).items():
+            audio, rate = sf.read(folder / name, dtype="float32")
+            if rate != SAMPLE_RATE:
+                audio = resample_poly(audio, SAMPLE_RATE, rate).astype(np.float32)
+            self.cache[text] = audio
+        return len(self.cache)
+
     async def warm(self, phrases: list[str]):
         for text in phrases:
             await self.synthesize(text)

@@ -28,7 +28,7 @@ PREROLL_FRAMES = 15    # keep 300 ms before the VAD trigger so first syllables a
 MAX_UNCLEAR = 2        # unclear turns in a row before handing over to a human
 
 GREETING = "Freya Bank'a hoş geldiniz, ben Leyla. Size nasıl yardımcı olabilirim?"
-UNCLEAR = "Kusura bakmayın, anlayamadım. Tekrar söyler misiniz?"
+UNCLEAR = "Özür dilerim, anlayamadım. Tekrar eder misiniz?"
 AGENT_BUSY = "Şu anda tüm temsilcilerimiz dolu. Size ben yardımcı olmaya devam edeyim."
 HOLD = "Temsilcimiz birazdan sizinle olacak, lütfen bekleyin."
 SHORT_REPLY = re.compile(r"^\W*(evet|olur|tamam|lütfen|hayır)\W*(lütfen)?\W*$", re.I)

@@ -25,9 +25,16 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "FreyaTTS")
 from freyatts import FreyaTTS  # noqa: E402
 from freyatts.pipeline import normalize  # noqa: E402
 
-PROMPTS = pathlib.Path("scripts/prompts_tr.txt")
-OUT_8K = pathlib.Path("telephony/asterisk/sounds/tr/freya")
-REPORT = pathlib.Path("bench/results/prompt_qc.json")
+import argparse
+
+_ap = argparse.ArgumentParser()
+_ap.add_argument("--prompts", default="scripts/prompts_tr.txt")
+_ap.add_argument("--out", default="telephony/asterisk/sounds/tr/freya")
+_ap.add_argument("--report", default="bench/results/prompt_qc.json")
+_args = _ap.parse_args()
+PROMPTS = pathlib.Path(_args.prompts)
+OUT_8K = pathlib.Path(_args.out)
+REPORT = pathlib.Path(_args.report)
 
 MAX_CER = 0.04        # characters, spaces ignored (digits vs words do not count)
 MIN_PITCH_HZ = 170    # Leyla sits around 200-330 Hz; drifted clauses fall to ~100-150

@@ -14,13 +14,13 @@ bank = ToolRegistry()
 )
 def block_card(reason: str = "lost") -> dict:
     return {"status": "blocked", "reason": reason,
-            "say": "Kartınızı güvenliğiniz için kullanıma kapattım. Yeni kartınız üç gün içinde adresinize ulaşacak."}
+            "say": "Kartınızı güvenliğiniz için kapattım. Yeni kartınız üç gün içinde adresinizde olacak."}
 
 
 @bank.tool("Kredi kartı ekstresi: borç, asgari ödeme tutarı, son ödeme tarihi. Örnek: ne kadar borcum var, son ödeme tarihim ne zaman.")
 def get_statement() -> dict:
     return {"due_date": "15 Ekim", "minimum_payment_try": 2400, "total_debt_try": 18750,
-            "say": "Son ödeme tarihiniz on beş ekim. Asgari tutar iki bin dört yüz lira."}
+            "say": "Son ödeme tarihiniz on beş ekim. Asgari ödemeniz iki bin dört yüz lira."}
 
 
 @bank.tool(
