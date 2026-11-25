@@ -104,9 +104,10 @@ class TTSClient:
     def load_verified(self, folder) -> int:
         """Load QC'd recordings of fixed phrases (scripts/render_prompts_verified.py).
 
-        FreyaTTS output depends on the device: the greeting rendered cleanly on Apple MPS but
-        inserted a stray word on the GTX 1050 with the same seed. Fixed phrases are therefore
-        rendered once, checked with Whisper + pitch, and shipped as audio, not re-synthesized."""
+        FreyaTTS draws its initial noise with a generator on the inference device, so the same
+        seed gives different audio on CUDA, MPS and CPU (bench/device_compare.py). Checking a
+        phrase on one device says nothing about another, so fixed phrases are rendered once,
+        checked with Whisper + pitch, and shipped as audio."""
         import json
         import pathlib
         folder = pathlib.Path(folder)

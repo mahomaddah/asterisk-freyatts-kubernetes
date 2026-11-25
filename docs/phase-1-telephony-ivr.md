@@ -43,3 +43,20 @@ Result: 8/8 prompts pass; report in `bench/results/prompt_qc.json`.
 Takeaway for production: pre-rendered prompts can be gated automatically. For live LLM replies the same
 checks are too slow to run per turn, so Phase 2 keeps replies short (one clause) and logs pitch/CER
 asynchronously for monitoring.
+
+## Correction (November 2026)
+The measurements above were made on Apple MPS only. `bench/device_compare.py` repeats them on 17 sentences with the same
+scoring at 48 kHz. FreyaTTS seeds a generator on the inference device (`model.py`, `sample()`), and the initial noise is
+the voice, so the same seed gives different audio per device:
+
+| device | mean CER | CER > 4 % | prompts with a window < 170 Hz |
+|---|---|---|---|
+| CUDA (GTX 1050, torch 2.8) | 5.5 % | 4/17 | 1 (`card-info`, 133 Hz) |
+| Apple MPS (torch 2.14) | 9.5 % | 9/17 | 2 (95 Hz) |
+| CPU (M4, torch 2.14) | 3.3 % | 6/17 | 2 (136 Hz) |
+
+The drift on `card-info` and phrase repetition on `menu` occur on CUDA too, but MPS overstated both. Torch versions differ,
+so the noise is the likely cause, not a proven one. An earlier commit said the greeting was clean on MPS and broken on
+the GTX 1050; that comparison mixed 8 kHz and 48 kHz audio and is withdrawn. At 8 kHz Whisper does hear an extra syllable in the
+CUDA greeting that it does not hear at 48 kHz, so prompt QC should score the 8 kHz version. The call path itself is clean: recorded
+audio matches the source with a constant offset and no gaps.

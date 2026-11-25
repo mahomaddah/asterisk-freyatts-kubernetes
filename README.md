@@ -33,7 +33,7 @@ iPhone (softphone) ──SIP/RTP──► Asterisk ──ARI + ExternalMedia RTP
 
 | | |
 |---|---|
-| Response time, caller stops talking → agent audio (Kubernetes, GTX 1050) | **p50 2.25 s, p95 2.48 s** |
+| Response time, caller stops talking → agent audio (Kubernetes, GTX 1050; 12 scripted calls, mostly pre-rendered replies, so TTS time is excluded) | **p50 2.25 s, p95 2.48 s** |
 | Routing accuracy on 14 banking utterances (Qwen3.5 2B + guards) | **14/14** |
 | FreyaTTS-small real-time factor: GTX 1050 / Apple M4 GPU / M4 CPU | 0.42 / 0.29–0.38 / 0.55–0.70 |
 | Egress from pods to the internet | **blocked**; only the LLM endpoint is allow-listed |
@@ -42,8 +42,9 @@ iPhone (softphone) ──SIP/RTP──► Asterisk ──ARI + ExternalMedia RTP
 ![Grafana dashboard](docs/img/grafana-dashboard.jpg)
 
 ## Findings worth reading
-* **FreyaTTS-small drifts to another speaker mid-utterance** on multi-clause prompts (pitch 320 Hz → 95 Hz),
-  and sometimes repeats a phrase. Measured with Whisper round-trips and pitch tracking; fixed for IVR prompts
+* **FreyaTTS-small drifts to another speaker mid-utterance** on multi-clause prompts (lowest 1.5 s pitch window on one
+  prompt: 133 Hz on CUDA, 95 Hz on Apple MPS, 136 Hz on CPU, starting near 320 Hz), and sometimes repeats a phrase.
+  Seeds are not portable: the initial noise comes from a per-device generator, so one seed gives different audio on each. Measured with Whisper round-trips and pitch tracking; fixed for IVR prompts
   with an ASR- and pitch-verified renderer. → [phase 1](docs/phase-1-telephony-ivr.md)
 * **A 4B model said "I blocked your card" without calling the tool.** Constrained JSON tool choice made a
   2B model 14/14 and twice as fast. → [phase 2](docs/phase-2-voice-agent.md)

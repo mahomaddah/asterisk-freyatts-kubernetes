@@ -1,0 +1,488 @@
+{
+ "cuda": {
+  "promp:welcome": {
+   "cer": 0.029,
+   "pitch": [
+    298,
+    320,
+    284,
+    203
+   ],
+   "heard": "Free'e banka hoş geldiniz. Bu görüşme hizmet kalitesi için kayıt altına alınabilir."
+  },
+  "promp:menu": {
+   "cer": 0.4,
+   "pitch": [
+    327,
+    291,
+    308,
+    260,
+    300,
+    278
+   ],
+   "heard": "Kart ekstreniz için 1'e, kayıp veya çalıntı kart için 1'e, kayıp veya çalıntı kart için 2'ye, müşter teşhidatçısı ise bağlanmak için 0'a basınız."
+  },
+  "promp:card-info": {
+   "cer": 0.186,
+   "pitch": [
+    316,
+    281,
+    262,
+    154,
+    133
+   ],
+   "heard": "Kartınızın son ödeme tarihi 10 değme tarihi 15 Ekim. Asgari ödeme tutarı 2400 liradır."
+  },
+  "promp:lost-card": {
+   "cer": 0.0,
+   "pitch": [
+    307,
+    272,
+    327,
+    288,
+    240
+   ],
+   "heard": "Kartınızı güvenliğiniz için geçici olarak kullanıma kapattık. Yeni kartınız 3 iş günü içinde adresinize gönderilecektir."
+  },
+  "promp:transfer": {
+   "cer": 0.138,
+   "pitch": [
+    312,
+    284,
+    249
+   ],
+   "heard": "Sizin müşteri temsilcimizi aktarıyorum. Lütfen ayrılmayınız."
+  },
+  "promp:agent-busy": {
+   "cer": 0.0,
+   "pitch": [
+    313,
+    273,
+    241
+   ],
+   "heard": "Şu anda tüm temsilcilerimiz başka bir görüşmede ana menüye dönüyorum."
+  },
+  "promp:invalid": {
+   "cer": 0.0,
+   "pitch": [
+    310,
+    275
+   ],
+   "heard": "Geçersiz bir tuşlama yaptınız."
+  },
+  "promp:goodbye": {
+   "cer": 0.019,
+   "pitch": [
+    296,
+    283,
+    200
+   ],
+   "heard": "Freya Bank aradığınız için teşekkür ederiz. İyi günler dileriz."
+  },
+  "agent:greeting": {
+   "cer": 0.018,
+   "pitch": [
+    314,
+    280,
+    256
+   ],
+   "heard": "Freeya Banka hoşgeldiniz ben Leyla. Size nasıl yardımcı olabilirim?"
+  },
+  "agent:unclear": {
+   "cer": 0.0,
+   "pitch": [
+    298,
+    273
+   ],
+   "heard": "Kusura bakmayın anlayamadım. Tekrar söyler misiniz?"
+  },
+  "agent:agent_busy": {
+   "cer": 0.0,
+   "pitch": [
+    313,
+    283,
+    250
+   ],
+   "heard": "Şu anda tüm temsilcilerimiz dolu. Size ben yardımcı olmaya devam edeyim."
+  },
+  "agent:hold": {
+   "cer": 0.0,
+   "pitch": [
+    301,
+    284,
+    212
+   ],
+   "heard": "Temsilcimiz birazdan sizinle olacak lütfen bekleyin."
+  },
+  "agent:safe_reply": {
+   "cer": 0.015,
+   "pitch": [
+    311,
+    272,
+    255
+   ],
+   "heard": "Bu konuda size en doğru bilgiyi temsilcimiz verebilir, bağlamak ister misiniz?"
+  },
+  "agent:declined_human": {
+   "cer": 0.0,
+   "pitch": [
+    305,
+    267
+   ],
+   "heard": "Peki başka nasıl yardımcı olabilirim?"
+  },
+  "agent:block_card": {
+   "cer": 0.0,
+   "pitch": [
+    305,
+    291,
+    303,
+    256
+   ],
+   "heard": "Kartınızı güvenliğiniz için kullanıma kapattım. Yeni kartınız 3 gün için de adresinize ulaşacak."
+  },
+  "agent:get_statement": {
+   "cer": 0.037,
+   "pitch": [
+    301,
+    253,
+    301,
+    217
+   ],
+   "heard": "Son ödeme tarihiniz 15 Eçekim. Asgari tutar 2400 lira."
+  },
+  "agent:transfer": {
+   "cer": 0.089,
+   "pitch": [
+    290,
+    307,
+    199
+   ],
+   "heard": "Sizin müşteri temsilcimize aktarıyorum. Lütfen tatlıktan ayrılmayın."
+  }
+ },
+ "mps": {
+  "promp:welcome": {
+   "cer": 0.0,
+   "pitch": [
+    305,
+    303,
+    296,
+    203
+   ],
+   "heard": "Freya Bank'a hoş geldiniz. Bu görüşme hizmet kalitesi için kayıt altına alınabilir."
+  },
+  "promp:menu": {
+   "cer": 0.295,
+   "pitch": [
+    312,
+    280,
+    258,
+    227,
+    151,
+    143
+   ],
+   "heard": "Kart ekstremiz için 1'e veya çalıntı kart için 1'e, kayıp veya çalıntı kart için 2'ye de. Müşteri temsilcisine bağlanmak için 0'a basın."
+  },
+  "promp:card-info": {
+   "cer": 0.314,
+   "pitch": [
+    327,
+    261,
+    262,
+    96,
+    95
+   ],
+   "heard": "Kartınızın son ödeme tarihi, haliheme tarihi 15 Ekim. Maskeri ödeme tarihi 2400 liradır."
+  },
+  "promp:lost-card": {
+   "cer": 0.076,
+   "pitch": [
+    314,
+    258,
+    303,
+    287,
+    216
+   ],
+   "heard": "Kartınızı güvenliğiniz için geçici olarak kullanıma kapattık. Yeni kartınızı çüşkünü için de adres ısınıza gönderilecektir."
+  },
+  "promp:transfer": {
+   "cer": 0.034,
+   "pitch": [
+    329,
+    278,
+    252
+   ],
+   "heard": "Size müşteri temsilcimizi aktarıyorum. Lütfen hattan ayrılmayınız."
+  },
+  "promp:agent-busy": {
+   "cer": 0.305,
+   "pitch": [
+    315,
+    261,
+    230
+   ],
+   "heard": "Şu anda tüm temsilcilerimiz başka başka bir görüşmede. Anam en yeniye dönüyorum. Altyazı M.K."
+  },
+  "promp:invalid": {
+   "cer": 0.0,
+   "pitch": [
+    308,
+    214
+   ],
+   "heard": "Geçersiz bir tuşlama yaptınız."
+  },
+  "promp:goodbye": {
+   "cer": 0.222,
+   "pitch": [
+    289,
+    294,
+    245
+   ],
+   "heard": "Prebank'ı aradığınız için teşekkür ederiz. İyi günler dileriz. Altyazı M.K."
+  },
+  "agent:greeting": {
+   "cer": 0.018,
+   "pitch": [
+    304,
+    262,
+    240
+   ],
+   "heard": "Freya Bank hoşgeldiniz ben Leyla. Size nasıl yardımcı olabilirim?"
+  },
+  "agent:unclear": {
+   "cer": 0.045,
+   "pitch": [
+    294,
+    268
+   ],
+   "heard": "Kusura bakmayın anlayamadadım. Tekrar söyler misiniz?"
+  },
+  "agent:agent_busy": {
+   "cer": 0.0,
+   "pitch": [
+    310,
+    272,
+    270
+   ],
+   "heard": "Şu anda tüm temsilcilerimiz dolu. Size ben yardımcı olmaya devam edeyim."
+  },
+  "agent:hold": {
+   "cer": 0.0,
+   "pitch": [
+    300,
+    258,
+    172
+   ],
+   "heard": "Temsilcimiz birazdan sizinle olacak lütfen bekleyin."
+  },
+  "agent:safe_reply": {
+   "cer": 0.06,
+   "pitch": [
+    300,
+    258,
+    260
+   ],
+   "heard": "Bu konuda size en doğru bilgiyi temsilcilicimiz verebilir bağlanmak ister misiniz?"
+  },
+  "agent:declined_human": {
+   "cer": 0.0,
+   "pitch": [
+    336,
+    261
+   ],
+   "heard": "Peki başka nasıl yardımcı olabilirim?"
+  },
+  "agent:block_card": {
+   "cer": 0.084,
+   "pitch": [
+    307,
+    259,
+    308,
+    258
+   ],
+   "heard": "Kartınızı güvenliğiniz için kullanıma kapattım. Yeni kartınız 3 günün içinde adresin zıvıza ulaşacak."
+  },
+  "agent:get_statement": {
+   "cer": 0.13,
+   "pitch": [
+    300,
+    276,
+    298,
+    216
+   ],
+   "heard": "Son ödeme tarihiniz 15 Ekim. Askeriyet fıtarı 2400 lira."
+  },
+  "agent:transfer": {
+   "cer": 0.036,
+   "pitch": [
+    329,
+    280,
+    240
+   ],
+   "heard": "Size müşteri temsilcimizi aktarıyorum lütfen hattan ayrılmayın."
+  }
+ },
+ "cpu": {
+  "promp:welcome": {
+   "cer": 0.0,
+   "pitch": [
+    277,
+    310,
+    275,
+    252
+   ],
+   "heard": "Freya Banka hoşgeldiniz. Bu görüşme hizmet kalitesi için kayıt altına alınabilir."
+  },
+  "promp:menu": {
+   "cer": 0.042,
+   "pitch": [
+    326,
+    289,
+    283,
+    267,
+    165,
+    142
+   ],
+   "heard": "Kart eksileriniz için 1'e, kayıp veya çalıntı kart için 2'ye. Müşteri temsilcisine bağlanmak için 0'a basınız."
+  },
+  "promp:card-info": {
+   "cer": 0.214,
+   "pitch": [
+    317,
+    284,
+    267,
+    163,
+    136
+   ],
+   "heard": "Kartınızın son ödeme tarihi, on ödeme tarihi 15 iklim. Asgari ödeme tutarı 2400 liradır."
+  },
+  "promp:lost-card": {
+   "cer": 0.0,
+   "pitch": [
+    319,
+    284,
+    332,
+    278,
+    272
+   ],
+   "heard": "Kartınızı güvenliğiniz için geçici olarak kullanıma kapattık. Yeni kartınız 3 iş günü içinde adresinize gönderilecektir."
+  },
+  "promp:transfer": {
+   "cer": 0.052,
+   "pitch": [
+    308,
+    266,
+    292
+   ],
+   "heard": "Sizin işleri temsilcimize aktarıyorum. Lütfen hattan ayrılmayınız."
+  },
+  "promp:agent-busy": {
+   "cer": 0.085,
+   "pitch": [
+    307,
+    281,
+    288
+   ],
+   "heard": "Şu anda tüm temsilcilerimiz başkanışla bir görüşmede ana menüye dönüyorum."
+  },
+  "promp:invalid": {
+   "cer": 0.0,
+   "pitch": [
+    306,
+    251
+   ],
+   "heard": "Geçersiz bir tuşlama yaptınız."
+  },
+  "promp:goodbye": {
+   "cer": 0.0,
+   "pitch": [
+    316,
+    303,
+    200
+   ],
+   "heard": "Freya Bank'ı aradığınız için teşekkür ederiz. İyi günler dileriz."
+  },
+  "agent:greeting": {
+   "cer": 0.0,
+   "pitch": [
+    329,
+    286,
+    238
+   ],
+   "heard": "Freya Bank'a hoş geldiniz. Ben Leyla. Size nasıl yardımcı olabilirim?"
+  },
+  "agent:unclear": {
+   "cer": 0.0,
+   "pitch": [
+    291,
+    280
+   ],
+   "heard": "Kusura bakmayın anlayamadım. Tekrar söyler misiniz?"
+  },
+  "agent:agent_busy": {
+   "cer": 0.083,
+   "pitch": [
+    312,
+    281,
+    252
+   ],
+   "heard": "Şu anda tüm temsilcilerimiz dolu. Size ben Ervan yardımcı olmaya devam edeyim."
+  },
+  "agent:hold": {
+   "cer": 0.0,
+   "pitch": [
+    304,
+    268,
+    172
+   ],
+   "heard": "Temsilcimiz birazdan sizinle olacak lütfen bekleyin."
+  },
+  "agent:safe_reply": {
+   "cer": 0.045,
+   "pitch": [
+    323,
+    268,
+    258
+   ],
+   "heard": "Bu konuda size en doğru bilgiyi temsilcimiz verebilir bir bağlanmak ister misiniz?"
+  },
+  "agent:declined_human": {
+   "cer": 0.0,
+   "pitch": [
+    319,
+    240
+   ],
+   "heard": "Peki başka nasıl yardımcı olabilirim?"
+  },
+  "agent:block_card": {
+   "cer": 0.0,
+   "pitch": [
+    300,
+    267,
+    325,
+    277
+   ],
+   "heard": "Kartınızı güvenliğiniz için kullanıma kapattım. Yeni kartınız 3 gün içinde adresinize ulaşacak."
+  },
+  "agent:get_statement": {
+   "cer": 0.019,
+   "pitch": [
+    315,
+    253,
+    284,
+    197
+   ],
+   "heard": "Son ödeme tarihiniz 15 Ekim. Asgari tutarı 2400 lira."
+  },
+  "agent:transfer": {
+   "cer": 0.018,
+   "pitch": [
+    310,
+    296,
+    258
+   ],
+   "heard": "Sizin müşteri temsilcimize aktarıyorum. Lütfen hattan ayrılmayın."
+  }
+ }
+}
