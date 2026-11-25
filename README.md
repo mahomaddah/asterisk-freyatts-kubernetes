@@ -42,6 +42,10 @@ iPhone (softphone) ──SIP/RTP──► Asterisk ──ARI + ExternalMedia RTP
 ![Grafana dashboard](docs/img/grafana-dashboard.jpg)
 
 ## Findings worth reading
+* **The voice said "Fiyaya Bank" instead of "Freya Bank" — but only on the phone.** The greeting passed QC at
+  48 kHz (CER 1.8 %) and failed at the 8 kHz the caller actually hears (7.1 %): the renderer had been grading a
+  signal nobody listens to. QC now runs at both rates, and a pronunciation spelling fixes the word without
+  changing what the agent is documented to say. → [phase 1](docs/phase-1-telephony-ivr.md)
 * **FreyaTTS-small drifts to another speaker mid-utterance** on multi-clause prompts (lowest 1.5 s pitch window on one
   prompt: 133 Hz on CUDA, 95 Hz on Apple MPS, 136 Hz on CPU, starting near 320 Hz), and sometimes repeats a phrase.
   Seeds are not portable: the initial noise comes from a per-device generator, so one seed gives different audio on each. Measured with Whisper round-trips and pitch tracking; fixed for IVR prompts

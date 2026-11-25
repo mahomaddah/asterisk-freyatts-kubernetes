@@ -60,3 +60,39 @@ so the noise is the likely cause, not a proven one. An earlier commit said the g
 the GTX 1050; that comparison mixed 8 kHz and 48 kHz audio and is withdrawn. At 8 kHz Whisper does hear an extra syllable in the
 CUDA greeting that it does not hear at 48 kHz, so prompt QC should score the 8 kHz version. The call path itself is clean: recorded
 audio matches the source with a constant offset and no gaps.
+
+## QC at the rate the caller hears (November 2026)
+The paragraph above ends with "prompt QC should score the 8 kHz version". It should, and it had not been: the renderer
+scored the 48 kHz render, then resampled to 8 kHz and shipped that unchecked. Transcribing the files Asterisk actually
+plays (`services/agent/prompts/*.wav`, 8 kHz PCM) shows what slipped through:
+
+| phrase | CER at 48 kHz | CER at 8 kHz | heard at 8 kHz |
+|---|---|---|---|
+| `greeting` | 1.8 % | **7.1 %** | "**Fiyaya Bank** hoşgeldiniz ben Leyla…" |
+| the other 8 phrases | ≤ 3.6 % | ≤ 3.6 % | correct |
+
+The model loses the one word a bank cannot afford to lose: its own name. This is not the telephone band being worse in
+general — corpus CER is the same at both rates (16.2 % vs 17.2 %, above) — it is the `Fr` cluster in *Freya* surviving at
+48 kHz and collapsing at 8 kHz.
+
+Two fixes were tried against the 8 kHz transcript:
+
+| attempt | CER 8 kHz | lowest pitch window | usable |
+|---|---|---|---|
+| as-is, one long clause (`max_words=11`) | 7.1 % | 240 Hz | no, wrong word |
+| same text split into short clauses (`max_words=6`) | 0.0 % | **112 Hz** | no, the voice drifts |
+| spell it **"Freyya"** for the model, score against "Freya" | 0.0 % (3 of 3 settings) | 202 Hz | yes |
+
+So `render_prompts_verified.py` now (a) transcribes every candidate at 48 kHz **and** at 8 kHz and requires both to pass,
+(b) accepts `real text ~ what to feed the model` in the phrase files, so a pronunciation spelling can rescue a word
+without changing what the agent claims to say — CER is still scored against the real spelling, and the real spelling is
+what lands in `manifest.json` and in the agent's phrase constants, and (c) writes that manifest itself (`--manifest`),
+because a key that drifts from `services/agent/call.py` silently turns a verified recording into an unverified live
+synthesis. Without the pronunciation spelling the QC winner was "Merhaba, ben Leyla…", which passes every check by
+dropping the bank's name altogether: a gate that is allowed to choose the words will optimise the message away.
+
+The renderer is reproducible on one device: re-running it rendered byte-identical audio for every phrase whose winning
+candidate did not change. Across devices it is not — that is the per-device generator above.
+
+Takeaway for production: verify at the sample rate, codec and bandwidth the user will hear, not the one the model emits.
+A proper noun belongs in a pronunciation lexicon, and a QC gate must judge the words it was given, never pick easier ones.

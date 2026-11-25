@@ -6,7 +6,7 @@ image:
     asterisk: "0.1.3"
     freya-tts: "0.1.0"
     stt: "0.1.1"
-    voice-agent: "0.1.7"
+    voice-agent: "0.1.8"
 
 # Secret with SIP_PASSWORD_1001, SIP_PASSWORD_1002, ARI_USER, ARI_PASSWORD.
 # Created out of band (kubectl create secret ...); never stored in the chart or in git.
