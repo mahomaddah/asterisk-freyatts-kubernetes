@@ -1,5 +1,5 @@
 {
- "Freya Bank'a hoş geldiniz, ben Leyla. Size nasıl yardımcı olabilirim?": "greeting.wav",
+ "Merhaba, Freya Bank'a hoş geldiniz. Ben Leyla, size nasıl yardımcı olabilirim?": "greeting.wav",
  "Özür dilerim, anlayamadım. Tekrar eder misiniz?": "unclear.wav",
  "Şu anda tüm temsilcilerimiz dolu. Size ben yardımcı olmaya devam edeyim.": "agent_busy.wav",
  "Temsilcimiz birazdan sizinle olacak, lütfen bekleyin.": "hold.wav",

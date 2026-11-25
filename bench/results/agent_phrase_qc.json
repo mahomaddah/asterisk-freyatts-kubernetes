@@ -1,16 +1,16 @@
 {
  "greeting": {
-  "text": "Freya Bank'a hoş geldiniz, ben Leyla. Size nasıl yardımcı olabilirim?",
+  "text": "Merhaba, Freya Bank'a hoş geldiniz. Ben Leyla, size nasıl yardımcı olabilirim?",
   "cer": 0.0,
   "cer_line": 0.0,
-  "min_pitch": 252,
+  "min_pitch": 232,
   "steps": 32,
   "max_words": 11,
-  "attempt": 4,
-  "heard": "Freya Bank'a hoş geldiniz. Ben Leyla. Size nasıl yardımcı olabilirim?",
-  "heard_line": "Freya Bank'a hoş geldiniz. Ben Leyla. Size nasıl yardımcı olabilirim?",
+  "attempt": 1,
+  "heard": "Merhaba, Freya Bank'a hoş geldiniz. Ben Leyla, size nasıl yardımcı olabilirim?",
+  "heard_line": "Merhaba, Freya Bank'a hoş geldiniz. Ben Leyla, size nasıl yardımcı olabilirim?",
   "passed": true,
-  "spoken_as": "Freyya Bank'a hoş geldiniz, ben Leyla. Size nasıl yardımcı olabilirim?"
+  "spoken_as": "Merhaba, Freyya Bank'a hoş geldiniz. Ben Leyla, size nasıl yardımcı olabilirim?"
  },
  "unclear": {
   "text": "Özür dilerim, anlayamadım. Tekrar eder misiniz?",

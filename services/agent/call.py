@@ -27,7 +27,7 @@ END_WINDOWS = 19       # 19 x 32 ms of silence -> caller finished (~600 ms)
 PREROLL_FRAMES = 15    # keep 300 ms before the VAD trigger so first syllables are not cut
 MAX_UNCLEAR = 2        # unclear turns in a row before handing over to a human
 
-GREETING = "Freya Bank'a hoş geldiniz, ben Leyla. Size nasıl yardımcı olabilirim?"
+GREETING = "Merhaba, Freya Bank'a hoş geldiniz. Ben Leyla, size nasıl yardımcı olabilirim?"
 UNCLEAR = "Özür dilerim, anlayamadım. Tekrar eder misiniz?"
 AGENT_BUSY = "Şu anda tüm temsilcilerimiz dolu. Size ben yardımcı olmaya devam edeyim."
 HOLD = "Temsilcimiz birazdan sizinle olacak, lütfen bekleyin."
